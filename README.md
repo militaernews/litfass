@@ -44,6 +44,10 @@ your channels, other projects, partners.
 Matching: an advert without categories runs everywhere, a placement without categories takes every
 advert, otherwise they must share a category.
 
+The bot speaks English and German, following the user's Telegram language. Its texts live in
+`server/res/strings/en.json` and `de.json` (loaded with [ptb-kit](https://github.com/militaernews/ptb-kit));
+another language is one more JSON file there, and keys it leaves out fall back to English.
+
 ## Feed format
 
 ```json

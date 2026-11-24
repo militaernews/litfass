@@ -6,6 +6,7 @@ from datetime import date, timedelta
 from html import escape
 
 from litfass_server.store import Store
+from litfass_server.texts import t
 
 BARS = "▁▂▃▄▅▆▇█"
 
@@ -18,11 +19,11 @@ def rate(clicks: int, views: int) -> str:
     return f"{clicks / views * 100:.1f}%" if views else "–"
 
 
-def summary(events: dict | None) -> str:
+def summary(events: dict | None, lang: str = "en") -> str:
     events = events or {"view": 0, "click": 0, "reward": 0}
     return (
-        f"👁 {events['view']:,} views · 👆 {events['click']:,} clicks ({rate(events['click'], events['view'])})"
-        f" · 🎁 {events['reward']:,} rewarded"
+        f"👁 {events['view']:,} {t(lang, 's_views')} · 👆 {events['click']:,} {t(lang, 's_clicks')}"
+        f" ({rate(events['click'], events['view'])}) · 🎁 {events['reward']:,} {t(lang, 's_rewarded')}"
     )
 
 
@@ -97,7 +98,7 @@ def network_report(store: Store, today: date | None = None) -> dict:
     }
 
 
-def overview(store: Store, title: str, names: dict, *, by: str, today: date | None = None, **scope) -> str:
+def overview(store: Store, title: str, names: dict, *, by: str, today: date | None = None, lang: str = "en", **scope) -> str:
     """The last 7 and 30 days for one scope (an advert, a publisher or everything), broken down by `by`."""
     today = today or date.today()
     week = store.totals(since(7, today), **scope).get(None)
@@ -105,21 +106,20 @@ def overview(store: Store, title: str, names: dict, *, by: str, today: date | No
     lines = [
         f"📊 <b>{escape(title)}</b>",
         "",
-        f"<b>7 days</b>\n{summary(week)}",
-        f"<b>30 days</b>\n{summary(month)}",
-        f"Views per day, last 14 days: <code>{sparkline(store, 14, today, **scope)}</code>",
+        f"<b>{t(lang, 's_7')}</b>\n{summary(week, lang)}",
+        f"<b>{t(lang, 's_30')}</b>\n{summary(month, lang)}",
+        f"{t(lang, 's_spark')}: <code>{sparkline(store, 14, today, **scope)}</code>",
     ]
     groups = store.totals(since(30, today), by=by, **scope)
     if groups:
-        label = "advert" if by == "ad_id" else "placement"
-        lines += ["", f"<b>By {label}, 30 days</b>"]
+        lines += ["", f"<b>{t(lang, 's_by_advert' if by == 'ad_id' else 's_by_placement')}</b>"]
         ranked = sorted(groups.items(), key=lambda item: item[1]["view"], reverse=True)[:10]
         for key, events in ranked:
-            name = names.get(key, f"#{key} (deleted)")
+            name = names.get(key, t(lang, "s_deleted", id=key))
             lines.append(
                 f"• {escape(str(name))[:40]}: {events['view']:,} 👁 · {events['click']:,} 👆 ({rate(events['click'], events['view'])})"
                 f" · {events['reward']:,} 🎁"
             )
     else:
-        lines += ["", "<i>No views yet.</i>"]
+        lines += ["", t(lang, "s_none")]
     return "\n".join(lines)

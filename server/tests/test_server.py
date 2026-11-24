@@ -149,3 +149,19 @@ async def test_http_network_stats_need_the_token(aiohttp_client, store):
     assert report["ads"][0]["live"] is True and report["placements"][0]["categories"] == ["news"]
     open_client = await aiohttp_client(make_app(store, None, URL))
     assert (await open_client.get("/v1/admin/stats", headers={"Authorization": "Bearer "})).status == 401
+
+
+def test_translations_are_complete():
+    from litfass_server.texts import STRINGS, labels
+    from litfass_server.feed import CATEGORIES
+
+    assert STRINGS.unknown() == {"de": []}
+    assert STRINGS.missing() == {"de": []}
+    assert labels(CATEGORIES, "de")["news"] == "📰 Nachrichten"
+    assert labels(CATEGORIES, "en")["news"] == "📰 News"
+
+
+def test_overview_in_german(store):
+    from litfass_server.stats import overview
+
+    assert "Noch keine Aufrufe" in overview(store, "Titel", {}, by="ad_id", lang="de")

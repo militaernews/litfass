@@ -8,6 +8,8 @@ from pathlib import Path
 
 from telegram import Bot, InputProfilePhotoStatic
 
+from litfass_server.texts import COMMANDS, STRINGS
+
 LOGO = Path(__file__).resolve().parents[2] / "brand" / "logo.png"
 
 PROFILE = {
@@ -36,6 +38,7 @@ async def main() -> None:
             await bot.set_my_name(name, language_code=code)
             await bot.set_my_short_description(short, language_code=code)
             await bot.set_my_description(description, language_code=code)
+        await STRINGS.apply_commands(bot, COMMANDS)
         with LOGO.open("rb") as file:
             await bot.set_my_profile_photo(InputProfilePhotoStatic(file))
     print("profile applied")
