@@ -152,11 +152,14 @@ async def test_http_network_stats_need_the_token(aiohttp_client, store):
 
 
 def test_translations_are_complete():
-    from litfass_server.texts import STRINGS, labels
-    from litfass_server.feed import CATEGORIES
+    from pathlib import Path
 
-    assert STRINGS.unknown() == {"de": []}
-    assert STRINGS.missing() == {"de": []}
+    from ptbkit.check import assert_complete
+
+    from litfass_server.feed import CATEGORIES
+    from litfass_server.texts import STRINGS, labels
+
+    assert_complete(STRINGS, Path(__file__).resolve().parents[1] / "litfass_server", dynamic=("command.", "label.", "p_", "f_", "s_by_"))
     assert labels(CATEGORIES, "de")["news"] == "📰 Nachrichten"
     assert labels(CATEGORIES, "en")["news"] == "📰 News"
 

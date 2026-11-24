@@ -21,7 +21,7 @@ your channels, other projects, partners.
 | `python/` | Python package for bots: the same feed rendered as Telegram messages, frequency caps, event reports |
 | `server/` | Management bot plus feed server (python-telegram-bot, aiohttp, SQLite) |
 | `site/`, `vercel.json` | The landing page |
-| `brand/` | Logo and social image (`python brand/build.py` regenerates them) |
+| `brand/` | Logo and social image, drawn from `brand/brand.json` with the brand generator in [militaernews/tools](https://github.com/militaernews/tools) |
 
 ## The bot
 
