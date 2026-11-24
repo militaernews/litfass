@@ -2,7 +2,8 @@
 
 Environment: LITFASS_TOKEN (the bot token), LITFASS_ADMIN_IDS (comma-separated Telegram user ids),
 LITFASS_PUBLIC_URL (where the feed server is reachable from outside, without a trailing slash),
-LITFASS_DB (SQLite file, default data/litfass.db) and LITFASS_PORT (default 3792).
+LITFASS_DB (SQLite file, default data/litfass.db), LITFASS_PORT (default 3792) and LITFASS_STATS_TOKEN
+(a secret that unlocks GET /v1/admin/stats for admin dashboards; unset disables it).
 """
 
 from __future__ import annotations
@@ -41,7 +42,7 @@ async def main() -> None:
     app.bot_data["litfass"] = Ctx(store, admins, public_url)
     register_handlers(app)
 
-    runner = web.AppRunner(make_app(store, app.bot, public_url), access_log=None)
+    runner = web.AppRunner(make_app(store, app.bot, public_url, os.getenv("LITFASS_STATS_TOKEN", "")), access_log=None)
     async with app:
         await app.bot.set_my_commands(COMMANDS)
         await runner.setup()

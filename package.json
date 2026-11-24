@@ -1,6 +1,6 @@
 {
 	"name": "@militaernews/litfass",
-	"version": "0.2.0",
+	"version": "0.2.1",
 	"description": "House adverts for web games and Telegram Mini Apps: a JSON feed, weighted picking, frequency caps and rewarded countdowns. No ad network, no tracking.",
 	"license": "MIT",
 	"type": "module",

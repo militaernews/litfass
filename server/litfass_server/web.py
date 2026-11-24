@@ -12,6 +12,9 @@ from aiohttp import web
 from telegram import Bot
 
 from litfass_server.feed import build_feed
+import hmac
+
+from litfass_server.stats import network_report, publisher_report
 from litfass_server.store import EVENTS, Store
 
 logger = logging.getLogger(__name__)
@@ -24,7 +27,7 @@ MAX_BATCH = 50
 PREFIXES = ("", "/litfass")
 
 
-def make_app(store: Store, bot: Bot | None, public_url: str) -> web.Application:
+def make_app(store: Store, bot: Bot | None, public_url: str, stats_token: str = "") -> web.Application:
     images: dict[tuple[str, int], bytes] = {}
     budget: dict[str, list] = defaultdict(lambda: [0.0, 0])
 
@@ -73,6 +76,22 @@ def make_app(store: Store, bot: Bot | None, public_url: str) -> web.Application:
             dumps=lambda data: json.dumps(data, ensure_ascii=False),
         )
 
+    async def stats(request: web.Request) -> web.Response:
+        """The placement's own statistics; the feed key is the credential."""
+        publisher = store.publisher_by_key(request.match_info["key"])
+        if not publisher:
+            return web.json_response({"error": "unknown feed"}, status=404, headers=CORS)
+        return web.json_response(
+            publisher_report(store, publisher), headers={**CORS, "Cache-Control": "private, max-age=60"}, dumps=lambda d: json.dumps(d, ensure_ascii=False)
+        )
+
+    async def network(request: web.Request) -> web.Response:
+        """Network-wide statistics for admin dashboards: `Authorization: Bearer <LITFASS_STATS_TOKEN>`."""
+        given = request.headers.get("Authorization", "").removeprefix("Bearer ")
+        if not stats_token or not hmac.compare_digest(given, stats_token):
+            return web.json_response({"error": "unauthorized"}, status=401)
+        return web.json_response(network_report(store), headers={"Cache-Control": "no-store"}, dumps=lambda d: json.dumps(d, ensure_ascii=False))
+
     async def media(request: web.Request) -> web.Response:
         ad = store.get_ad(request.match_info["ad_id"])
         if not ad or not ad["image_file_id"] or bot is None:
@@ -98,6 +117,8 @@ def make_app(store: Store, bot: Bot | None, public_url: str) -> web.Application:
         app.router.add_get(f"{prefix}/v1/feed/{{key}}", feed)
         app.router.add_get(f"{prefix}/v1/media/{{ad_id}}", media)
         app.router.add_post(f"{prefix}/v1/event/{{key}}", event)
+        app.router.add_get(f"{prefix}/v1/stats/{{key}}", stats)
+        app.router.add_get(f"{prefix}/v1/admin/stats", network)
         app.router.add_route("OPTIONS", f"{prefix}/v1/{{tail:.*}}", options)
         app.router.add_get(f"{prefix}/healthz", health)
     return app

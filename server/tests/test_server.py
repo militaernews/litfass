@@ -118,3 +118,34 @@ def test_overview_text(store):
     assert "200 views · 👆 10 clicks (5.0%)" in text
     assert "• Game: 200 👁 · 10 👆 (5.0%) · 0 🎁" in text
     assert text.count("█") == 1
+
+
+async def test_http_stats_cover_only_the_placement(aiohttp_client, store):
+    from datetime import date
+
+    ad_id = live_ad(store)
+    mine = store.create_publisher(1, "Mine", "web", [])
+    other = store.create_publisher(2, "Other", "web", [])
+    today = date.today().isoformat()
+    store.count(today, ad_id, mine["id"], "view", 4)
+    store.count(today, ad_id, mine["id"], "click", 1)
+    store.count(today, ad_id, other["id"], "view", 100)
+    client = await aiohttp_client(make_app(store, None, URL))
+    report = await (await client.get(f"/litfass/v1/stats/{mine['key']}")).json()
+    assert report["placement"] == "Mine"
+    assert report["totals"]["7"] == {"view": 4, "click": 1, "reward": 0}
+    assert len(report["days"]) == 30 and report["days"][-1] == {"day": today, "view": 4, "click": 1, "reward": 0}
+    assert report["ads"] == [{"id": ad_id, "title": "Title", "view": 4, "click": 1, "reward": 0}]
+    assert (await client.get("/v1/stats/nope")).status == 404
+
+
+async def test_http_network_stats_need_the_token(aiohttp_client, store):
+    live_ad(store)
+    store.create_publisher(1, "P", "web", ["news"])
+    client = await aiohttp_client(make_app(store, None, URL, "secret"))
+    assert (await client.get("/v1/admin/stats")).status == 401
+    assert (await client.get("/v1/admin/stats", headers={"Authorization": "Bearer wrong"})).status == 401
+    report = await (await client.get("/v1/admin/stats", headers={"Authorization": "Bearer secret"})).json()
+    assert report["ads"][0]["live"] is True and report["placements"][0]["categories"] == ["news"]
+    open_client = await aiohttp_client(make_app(store, None, URL))
+    assert (await open_client.get("/v1/admin/stats", headers={"Authorization": "Bearer "})).status == 401

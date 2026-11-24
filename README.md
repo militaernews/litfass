@@ -79,6 +79,8 @@ take down the whole feed, and style values that aren't plain colours are ignored
 | --- | --- |
 | `GET /v1/feed/<key>` | The placement's feed, already matched to its content (CORS open, cached 5 min) |
 | `POST /v1/event/<key>` | `{ ad, event }` or `{ events: [...] }` with `view`, `click` or `reward`; counted into daily totals, at most 600 a minute per key |
+| `GET /v1/stats/<key>` | The placement's own numbers: totals for 7 and 30 days, each of the last 30 days, per advert |
+| `GET /v1/admin/stats` | The whole network (every advert and placement); needs `Authorization: Bearer <LITFASS_STATS_TOKEN>` |
 | `GET /v1/media/<ad>` | An advert's image (uploaded to the bot as a photo) |
 
 Routes also answer under `/litfass/…` for reverse proxies that keep the prefix.
@@ -86,7 +88,7 @@ Routes also answer under `/litfass/…` for reverse proxies that keep the prefix
 ## Web
 
 ```sh
-bun add github:militaernews/litfass#v0.2.0
+bun add github:militaernews/litfass#v0.2.1
 ```
 
 ```ts
@@ -115,7 +117,7 @@ Nothing is logged, but if you want to avoid even that, fetch the feed (and send 
 ## Telegram bots
 
 ```sh
-pip install "litfass[telegram] @ git+https://github.com/militaernews/litfass@v0.2.0#subdirectory=python"
+pip install "litfass[telegram] @ https://github.com/militaernews/litfass/archive/refs/tags/v0.2.1.tar.gz#subdirectory=python"   # no git needed
 ```
 
 ```python
@@ -140,7 +142,7 @@ LITFASS_TOKEN=… LITFASS_ADMIN_IDS=123,456 LITFASS_PUBLIC_URL=https://ads.examp
 python -m litfass_server.profile   # once: name, descriptions and the logo as profile photo
 ```
 
-`LITFASS_DB` (default `data/litfass.db`) and `LITFASS_PORT` (default 3792) are optional.
+`LITFASS_DB` (default `data/litfass.db`), `LITFASS_PORT` (default 3792) and `LITFASS_STATS_TOKEN` (unlocks `/v1/admin/stats`) are optional.
 
 ## Development
 
