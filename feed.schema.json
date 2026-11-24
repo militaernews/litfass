@@ -1,0 +1,41 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://github.com/militaernews/litfass/feed.schema.json",
+	"title": "litfass feed",
+	"type": "object",
+	"required": ["version", "ads"],
+	"properties": {
+		"$schema": { "type": "string" },
+		"version": { "const": 1 },
+		"ads": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"required": ["id", "url", "text"],
+				"properties": {
+					"id": { "type": "string", "minLength": 1 },
+					"url": { "type": "string", "pattern": "^https://" },
+					"placements": { "type": "array", "items": { "enum": ["rewarded", "banner", "chat"] } },
+					"weight": { "type": "number", "minimum": 0 },
+					"start": { "type": "string", "format": "date" },
+					"end": { "type": "string", "format": "date" },
+					"emoji": { "type": "string" },
+					"image": { "type": "string" },
+					"text": {
+						"type": "object",
+						"required": ["en"],
+						"additionalProperties": {
+							"type": "object",
+							"required": ["title", "body", "cta"],
+							"properties": {
+								"title": { "type": "string", "minLength": 1 },
+								"body": { "type": "string", "minLength": 1 },
+								"cta": { "type": "string", "minLength": 1 }
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}

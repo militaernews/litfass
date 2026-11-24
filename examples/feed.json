@@ -1,0 +1,27 @@
+{
+	"$schema": "../feed.schema.json",
+	"version": 1,
+	"ads": [
+		{
+			"id": "example-channel",
+			"emoji": "📰",
+			"url": "https://t.me/telegram",
+			"placements": ["rewarded", "banner", "chat"],
+			"weight": 2,
+			"text": {
+				"en": { "title": "Our news channel", "body": "Daily updates, no noise.", "cta": "Open channel" },
+				"de": { "title": "Unser Nachrichtenkanal", "body": "Täglich aktuell, ohne Lärm.", "cta": "Kanal öffnen" }
+			}
+		},
+		{
+			"id": "example-winter-event",
+			"emoji": "❄️",
+			"url": "https://t.me/telegram",
+			"start": "2026-12-01",
+			"end": "2027-01-07",
+			"text": {
+				"en": { "title": "Winter event", "body": "Limited time only.", "cta": "Join" }
+			}
+		}
+	]
+}

@@ -1,0 +1,23 @@
+{
+	"name": "@militaernews/litfass",
+	"version": "0.1.0",
+	"description": "House adverts for web games and Telegram Mini Apps: a JSON feed, weighted picking, frequency caps and rewarded countdowns. No ad network, no tracking.",
+	"license": "MIT",
+	"type": "module",
+	"repository": "github:militaernews/litfass",
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" },
+		"./feed.schema.json": "./feed.schema.json"
+	},
+	"files": ["dist", "feed.schema.json"],
+	"scripts": {
+		"build": "tsc -p tsconfig.json",
+		"test": "bun test src",
+		"test:python": "cd python && python3 -m pytest -q"
+	},
+	"devDependencies": {
+		"typescript": "5.9.3"
+	}
+}
