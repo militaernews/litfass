@@ -6,11 +6,33 @@
 			"id": "example-channel",
 			"emoji": "📰",
 			"url": "https://t.me/telegram",
-			"placements": ["rewarded", "banner", "chat"],
+			"placements": [
+				"rewarded",
+				"banner",
+				"chat"
+			],
 			"weight": 2,
 			"text": {
-				"en": { "title": "Our news channel", "body": "Daily updates, no noise.", "cta": "Open channel" },
-				"de": { "title": "Unser Nachrichtenkanal", "body": "Täglich aktuell, ohne Lärm.", "cta": "Kanal öffnen" }
+				"en": {
+					"title": "Our news channel",
+					"body": "Daily updates, no noise.",
+					"cta": "Open channel"
+				},
+				"de": {
+					"title": "Unser Nachrichtenkanal",
+					"body": "Täglich aktuell, ohne Lärm.",
+					"cta": "Kanal öffnen"
+				}
+			},
+			"categories": [
+				"news",
+				"military"
+			],
+			"style": {
+				"variant": "card",
+				"background": "#4b5320",
+				"color": "#f4ecd8",
+				"accent": "#e8c547"
 			}
 		},
 		{
@@ -20,7 +42,11 @@
 			"start": "2026-12-01",
 			"end": "2027-01-07",
 			"text": {
-				"en": { "title": "Winter event", "body": "Limited time only.", "cta": "Join" }
+				"en": {
+					"title": "Winter event",
+					"body": "Limited time only.",
+					"cta": "Join"
+				}
 			}
 		}
 	]

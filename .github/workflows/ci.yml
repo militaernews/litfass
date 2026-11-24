@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  web:
+    name: Web package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.4
+      - run: bun install --frozen-lockfile
+      - run: bun test src
+      - run: bun run build
+      - name: dist/ is up to date
+        run: git diff --exit-code -- dist || (echo "::error::dist/ is stale, run 'bun run build' and commit it" && exit 1)
+
+  python:
+    name: Python package
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: pip install ./python pytest
+      - run: pytest -q python/tests
+
+  server:
+    name: Bot and feed server
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install -r server/requirements.txt pytest pytest-asyncio pytest-aiohttp
+      - run: pytest -q
+        working-directory: server
+
+  feed:
+    name: Example feed matches the schema
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install check-jsonschema
+      - run: check-jsonschema --schemafile feed.schema.json examples/feed.json

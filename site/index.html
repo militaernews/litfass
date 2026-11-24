@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>litfass</title>
+		<meta name="description" content="House adverts for web games, Mini Apps and Telegram bots. No ad network, no tracking, one JSON feed." />
+		<meta property="og:title" content="litfass" />
+		<meta property="og:description" content="House adverts for web games, Mini Apps and Telegram bots. No ad network, no tracking." />
+		<meta property="og:image" content="/social.png" />
+		<meta name="twitter:card" content="summary_large_image" />
+		<link rel="icon" href="/logo.png" />
+		<style>
+			:root {
+				--bg: #eef6fc;
+				--bg-2: #dcecf8;
+				--ink: #0b1d33;
+				--muted: #4a5d73;
+				--green: #0c3a6b;
+				--red: #0a7fbf;
+				--card: #ffffff;
+				--code: #0b1d33;
+				--code-fg: #cfefff;
+				color-scheme: light dark;
+			}
+			@media (prefers-color-scheme: dark) {
+				:root:not([data-theme='light']) {
+					--bg: #1b1029;
+					--bg-2: #120a1d;
+					--ink: #e6f6ff;
+					--muted: #9fb6c9;
+					--green: #9be7ff;
+					--red: #2ec5ff;
+					--card: #0c2547;
+					--code: #061a36;
+					--code-fg: #cfefff;
+				}
+			}
+			:root[data-theme='dark'] {
+				--bg: #1b1029;
+					--bg-2: #120a1d;
+					--ink: #e6f6ff;
+					--muted: #9fb6c9;
+					--green: #9be7ff;
+					--red: #2ec5ff;
+					--card: #0c2547;
+					--code: #061a36;
+					--code-fg: #cfefff;
+			}
+			* {
+				box-sizing: border-box;
+			}
+			body {
+				margin: 0;
+				background: var(--bg);
+				color: var(--ink);
+				font: 17px/1.55 system-ui, -apple-system, 'Segoe UI', 'Noto Sans', sans-serif;
+			}
+			main {
+				max-width: 960px;
+				margin: 0 auto;
+				padding: 0 16px 64px;
+			}
+			header {
+				display: flex;
+				gap: 32px;
+				align-items: center;
+				padding: 48px 0 24px;
+			}
+			header img {
+				width: 180px;
+				height: 180px;
+				border-radius: 50%;
+				flex: none;
+			}
+			h1 {
+				margin: 0;
+				font-size: clamp(3rem, 9vw, 5rem);
+				line-height: 1;
+				letter-spacing: -0.04em;
+				color: var(--green);
+			}
+			.lead {
+				font-size: 1.25rem;
+				margin: 0.5rem 0 0;
+			}
+			.tags {
+				color: var(--red);
+				font-weight: 700;
+				margin: 0.75rem 0 0;
+			}
+			.actions {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 12px;
+				margin-top: 1.25rem;
+			}
+			.button {
+				display: inline-block;
+				padding: 0.6rem 1.1rem;
+				border-radius: 999px;
+				background: var(--green);
+				color: var(--bg);
+				font-weight: 700;
+				text-decoration: none;
+			}
+			.button.secondary {
+				background: transparent;
+				color: var(--green);
+				box-shadow: inset 0 0 0 2px var(--green);
+			}
+			h2 {
+				margin: 2.5rem 0 0.75rem;
+				color: var(--green);
+			}
+			.grid {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+				gap: 16px;
+			}
+			.card {
+				background: var(--card);
+				border-radius: 14px;
+				padding: 18px 20px;
+			}
+			.card h3 {
+				margin: 0 0 0.35rem;
+				font-size: 1.05rem;
+			}
+			.card p {
+				margin: 0;
+				color: var(--muted);
+			}
+			.demo {
+				display: grid;
+				gap: 14px;
+			}
+			pre {
+				margin: 0;
+				padding: 14px 16px;
+				border-radius: 12px;
+				background: var(--code);
+				color: var(--code-fg);
+				overflow-x: auto;
+				font-size: 0.85rem;
+				line-height: 1.5;
+			}
+			ol {
+				padding-inline-start: 1.25rem;
+			}
+			footer {
+				margin-top: 3rem;
+				color: var(--muted);
+				font-size: 0.9rem;
+			}
+			a {
+				color: var(--green);
+			}
+			@media (max-width: 640px) {
+				header {
+					flex-direction: column;
+					text-align: center;
+					gap: 16px;
+				}
+				header img {
+					width: 140px;
+					height: 140px;
+				}
+				.actions {
+					justify-content: center;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<main>
+			<header>
+				<img src="/logo.png" alt="An advertising pillar on a radar screen" width="180" height="180" />
+				<div>
+					<h1>litfass</h1>
+					<p class="lead">House adverts for web games, Mini Apps, Telegram bots and channels.</p>
+					<p class="tags">No ad network · no tracking · one JSON feed</p>
+					<div class="actions">
+						<a class="button" href="https://t.me/litfass_advertisement_bot">Open the bot</a>
+						<a class="button secondary" href="https://github.com/militaernews/litfass">GitHub</a>
+					</div>
+				</div>
+			</header>
+
+			<h2>What it does</h2>
+			<div class="grid">
+				<div class="card">
+					<h3>📮 Your own posters</h3>
+					<p>Adverts for your channels, projects and partners, managed in a Telegram bot: texts per language, link, image, schedule and weight.</p>
+				</div>
+				<div class="card">
+					<h3>🗂 Adverts that fit</h3>
+					<p>Placements register themselves and pick their content (news, gaming, tech …). Their feed only carries adverts for that content.</p>
+				</div>
+				<div class="card">
+					<h3>🎨 Styled to match</h3>
+					<p>Colour presets or your own colours, as a card, banner or poster. On the web it's themable with CSS variables.</p>
+				</div>
+				<div class="card">
+					<h3>📊 Honest numbers</h3>
+					<p>Views, clicks and completed rewarded views as daily totals per advert and placement. No IP addresses, no profiles, no cookies.</p>
+				</div>
+			</div>
+
+			<h2>Looks like this</h2>
+			<div class="demo" id="demo"></div>
+
+			<h2>Show adverts in your project</h2>
+			<ol>
+				<li>Open <a href="https://t.me/litfass_advertisement_bot">@litfass_advertisement_bot</a> and send <code>/register</code>.</li>
+				<li>Name your site, bot or channel and pick the content you publish.</li>
+				<li>Use the feed URL the bot gives you with one of the packages below. <code>/stats</code> shows how it's going.</li>
+			</ol>
+			<pre><code>// Web: bun add github:militaernews/litfass
+import { createReporter, eventUrl, fetchFeed, injectAdStyles, pickAd, renderAd } from '@militaernews/litfass';
+
+const feed = await fetchFeed(FEED_URL);
+const reporter = createReporter(eventUrl(FEED_URL));
+const ad = pickAd(feed, { placement: 'banner' });
+if (ad) {
+	injectAdStyles();
+	slot.append(renderAd(ad, { onClick: (ad) =&gt; reporter.report(ad, 'click') }));
+	reporter.report(ad, 'view');
+}</code></pre>
+			<p></p>
+			<pre><code># Telegram bots: pip install "litfass[telegram] @ git+https://github.com/militaernews/litfass#subdirectory=python"
+from litfass import FrequencyCap, fetch_feed, pick_ad, report_events, send_ad
+
+ads = await fetch_feed(FEED_URL)
+ad = pick_ad(ads, "chat")
+if ad and CAP.record(chat_id):
+    await send_ad(bot, chat_id, ad, lang)
+    await report_events(FEED_URL, [(ad.id, "view")])</code></pre>
+
+			<h2>Keep it legal</h2>
+			<p>
+				Adverts have to be recognisable as adverts (in Germany § 6 DDG and § 5a UWG), so the renderers label them „Anzeige“ by default.
+				The feed and the statistics hold no personal data. If you load the feed straight from a visitor's browser, their IP address
+				reaches the feed server for that request, but it isn't logged or stored. To keep even that off, fetch the feed on your own server.
+			</p>
+
+			<footer>
+				MIT licensed · <a href="https://github.com/militaernews/litfass">github.com/militaernews/litfass</a>
+			</footer>
+		</main>
+		<script type="module">
+			import { injectAdStyles, renderAd } from '/litfass.js';
+			const ad = (variant, style, extra = {}) => ({
+				id: variant,
+				url: 'https://t.me/litfass_advertisement_bot',
+				emoji: '📰',
+				style: { variant, ...style },
+				text: { en: { title: 'Your channel here', body: 'Daily updates, no noise. Register your placement in the bot.', cta: 'Open the bot' } },
+				...extra
+			});
+			injectAdStyles();
+			const demo = document.getElementById('demo');
+			demo.append(
+				renderAd(ad('card', { background: '#0c3a6b', color: '#e6f6ff', accent: '#2ec5ff' }), { lang: 'en', label: 'Anzeige' }),
+				renderAd(ad('banner', { background: '#14161a', color: '#f5f5f5', accent: '#e5484d' }, { emoji: '🎮' }), { lang: 'en' }),
+				renderAd(ad('poster', { background: '#ffd60a', color: '#111111', accent: '#d00000' }, { emoji: '🏆' }), { lang: 'en' })
+			);
+		</script>
+	</body>
+</html>

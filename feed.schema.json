@@ -3,36 +3,121 @@
 	"$id": "https://github.com/militaernews/litfass/feed.schema.json",
 	"title": "litfass feed",
 	"type": "object",
-	"required": ["version", "ads"],
+	"required": [
+		"version",
+		"ads"
+	],
 	"properties": {
-		"$schema": { "type": "string" },
-		"version": { "const": 1 },
+		"$schema": {
+			"type": "string"
+		},
+		"version": {
+			"const": 1
+		},
 		"ads": {
 			"type": "array",
 			"items": {
 				"type": "object",
-				"required": ["id", "url", "text"],
+				"required": [
+					"id",
+					"url",
+					"text"
+				],
 				"properties": {
-					"id": { "type": "string", "minLength": 1 },
-					"url": { "type": "string", "pattern": "^https://" },
-					"placements": { "type": "array", "items": { "enum": ["rewarded", "banner", "chat"] } },
-					"weight": { "type": "number", "minimum": 0 },
-					"start": { "type": "string", "format": "date" },
-					"end": { "type": "string", "format": "date" },
-					"emoji": { "type": "string" },
-					"image": { "type": "string" },
+					"id": {
+						"type": "string",
+						"minLength": 1
+					},
+					"url": {
+						"type": "string",
+						"pattern": "^https://"
+					},
+					"placements": {
+						"type": "array",
+						"items": {
+							"enum": [
+								"rewarded",
+								"banner",
+								"chat"
+							]
+						}
+					},
+					"weight": {
+						"type": "number",
+						"minimum": 0
+					},
+					"start": {
+						"type": "string",
+						"format": "date"
+					},
+					"end": {
+						"type": "string",
+						"format": "date"
+					},
+					"emoji": {
+						"type": "string"
+					},
+					"image": {
+						"type": "string"
+					},
 					"text": {
 						"type": "object",
-						"required": ["en"],
+						"required": [
+							"en"
+						],
 						"additionalProperties": {
 							"type": "object",
-							"required": ["title", "body", "cta"],
+							"required": [
+								"title",
+								"body",
+								"cta"
+							],
 							"properties": {
-								"title": { "type": "string", "minLength": 1 },
-								"body": { "type": "string", "minLength": 1 },
-								"cta": { "type": "string", "minLength": 1 }
+								"title": {
+									"type": "string",
+									"minLength": 1
+								},
+								"body": {
+									"type": "string",
+									"minLength": 1
+								},
+								"cta": {
+									"type": "string",
+									"minLength": 1
+								}
 							}
 						}
+					},
+					"categories": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						}
+					},
+					"style": {
+						"type": "object",
+						"properties": {
+							"variant": {
+								"enum": [
+									"card",
+									"banner",
+									"poster"
+								]
+							},
+							"background": {
+								"type": "string",
+								"pattern": "^#[0-9a-fA-F]{3,8}$"
+							},
+							"color": {
+								"type": "string",
+								"pattern": "^#[0-9a-fA-F]{3,8}$"
+							},
+							"accent": {
+								"type": "string",
+								"pattern": "^#[0-9a-fA-F]{3,8}$"
+							}
+						},
+						"additionalProperties": false
 					}
 				}
 			}

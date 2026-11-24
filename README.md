@@ -1,17 +1,50 @@
+<p align="center"><img src="brand/social.png" alt="litfass: house adverts for web games, Mini Apps and Telegram bots" width="720"></p>
+
 # litfass
 
-House adverts for web games, Telegram Mini Apps and Telegram bots. A *Litfaßsäule* is the round
-advertising pillar on German streets. Like the pillar, litfass only shows posters that you put up
-yourself: your own channels, other projects, partners.
+House adverts for web games, Telegram Mini Apps, bots and channels. A *Litfaßsäule* is the round
+advertising pillar on German streets. Like the pillar, litfass only shows posters you put up yourself:
+your channels, other projects, partners.
 
-- **No ad network, no tracking.** The feed is a JSON file you bundle or host on your own server. No
-  third-party requests means no cookie banner under § 25 TDDDG, as long as your images stay on your own origin.
+- **No ad network, no tracking.** Statistics are daily totals per advert and placement. No IP addresses,
+  user ids or cookies, and no access log on the feed server.
+- **Managed in Telegram.** Admins create and style adverts in [@litfass_advertisement_bot](https://t.me/litfass_advertisement_bot).
+  Anyone can register a placement (website, Mini App, bot, channel), pick the content it publishes and get
+  a feed that only carries adverts for that content.
 - **One feed format** for the web (`@militaernews/litfass`, TypeScript) and for bots (`litfass`, Python).
-- **Rewarded viewings** come as a countdown. Your app grants the reward, e.g. continuing a run.
-- **Labelled as adverts.** German law (§ 6 DDG, § 5a UWG) requires adverts to be recognisable as such.
-  `ad_html` prefixes "Anzeige", and web renderers should show a label too.
+- **Labelled as adverts.** German law (§ 6 DDG, § 5a UWG) requires adverts to be recognisable as such,
+  so the renderers add "Anzeige" by default.
 
-## Feed
+| Folder | What it is |
+| --- | --- |
+| `src/`, `dist/` | Web package: parse, pick (placement, schedule, weight, categories), render with styles, report events |
+| `python/` | Python package for bots: the same feed rendered as Telegram messages, frequency caps, event reports |
+| `server/` | Management bot plus feed server (python-telegram-bot, aiohttp, SQLite) |
+| `site/`, `vercel.json` | The landing page |
+| `brand/` | Logo and social image (`python brand/build.py` regenerates them) |
+
+## The bot
+
+**Everyone**
+
+- `/register`: name your placement, choose where the ads appear and which content you publish. You get a
+  feed URL. Keep it to yourself, because it identifies your placement in the statistics.
+- `/mine`: your placements. Change their content, rename them, get a new key, delete them, see their stats.
+- `/stats`: views, clicks (and click rate) and completed rewarded views for the last 7 and 30 days, a
+  14-day sparkline, and the numbers per advert.
+
+**Admins** (`LITFASS_ADMIN_IDS`)
+
+- `/newad`, `/ads`: the link, texts per language, emoji or image, content categories, placements
+  (rewarded, banner, chat), weight, schedule, and a style: colour presets (radar, olive, night, paper,
+  alert, sky) or your own colours, as a card, banner or poster. New adverts start paused.
+- `/publishers`: every placement, with block/unblock.
+- `/stats` and the 📊 button on each advert: the same overview, broken down per placement.
+
+Matching: an advert without categories runs everywhere, a placement without categories takes every
+advert, otherwise they must share a category.
+
+## Feed format
 
 ```json
 {
@@ -22,9 +55,11 @@ yourself: your own channels, other projects, partners.
 			"emoji": "📰",
 			"url": "https://t.me/yourchannel",
 			"placements": ["rewarded", "banner", "chat"],
+			"categories": ["news", "military"],
 			"weight": 2,
 			"start": "2026-12-01",
 			"end": "2027-01-07",
+			"style": { "variant": "card", "background": "#0c3a6b", "color": "#e6f6ff", "accent": "#2ec5ff" },
 			"text": {
 				"en": { "title": "Our channel", "body": "Daily updates.", "cta": "Open" },
 				"de": { "title": "Unser Kanal", "body": "Täglich aktuell.", "cta": "Öffnen" }
@@ -34,57 +69,87 @@ yourself: your own channels, other projects, partners.
 }
 ```
 
-`id`, `url` (https only) and an `en` text are required. Everything else is optional. Invalid adverts are
-dropped, so one typo doesn't take down the whole feed. See [`feed.schema.json`](feed.schema.json) and
-[`examples/feed.json`](examples/feed.json).
+`id`, `url` (https only) and an `en` text are required. Invalid adverts are dropped, so one typo doesn't
+take down the whole feed, and style values that aren't plain colours are ignored. See
+[`feed.schema.json`](feed.schema.json). A bundled feed in this format works without any server.
+
+## Server API
+
+| Request | What it does |
+| --- | --- |
+| `GET /v1/feed/<key>` | The placement's feed, already matched to its content (CORS open, cached 5 min) |
+| `POST /v1/event/<key>` | `{ ad, event }` or `{ events: [...] }` with `view`, `click` or `reward`; counted into daily totals, at most 600 a minute per key |
+| `GET /v1/media/<ad>` | An advert's image (uploaded to the bot as a photo) |
+
+Routes also answer under `/litfass/…` for reverse proxies that keep the prefix.
 
 ## Web
 
 ```sh
-bun add github:militaernews/litfass#v0.1.0
+bun add github:militaernews/litfass#v0.2.0
 ```
 
 ```ts
-import { frequencyCap, localize, openAdLink, parseFeed, pickAd, rewardedCountdown } from '@militaernews/litfass';
-import raw from './feed.json';
+import { createReporter, eventUrl, fetchFeed, injectAdStyles, pickAd, renderAd, rewardedCountdown } from '@militaernews/litfass';
 
-const feed = parseFeed(raw);
-const cap = frequencyCap({ key: 'litfass:rewarded', max: 5, windowMs: 86_400_000, storage: localStorage });
+const feed = await fetchFeed(FEED_URL, { fallback: bundledFeed });
+const reporter = createReporter(eventUrl(FEED_URL));
 
-const ad = pickAd(feed, { placement: 'rewarded' });
-if (ad && cap.remaining() > 0) {
-	const { title, body, cta } = localize(ad, navigator.language);
-	// render title/body/cta in your own UI, the button calls openAdLink(ad.url)
-	rewardedCountdown(5, { onTick: (s) => render(s), onDone: () => { cap.record(); grantReward(); } });
+const ad = pickAd(feed, { placement: 'banner' });
+if (ad) {
+	injectAdStyles();
+	slot.append(renderAd(ad, { onClick: (ad) => reporter.report(ad, 'click') }));
+	reporter.report(ad, 'view');
 }
 ```
 
-`openAdLink` opens `t.me` links inside Telegram when running as a Mini App (`Telegram.WebApp.openTelegramLink`)
-and opens anything else in a new tab.
+The look comes from the advert's `style`. Override it with the CSS variables `--litfass-bg`,
+`--litfass-fg` and `--litfass-accent`, or with the `.litfass-ad`, `.litfass-ad--card|banner|poster` and
+`.litfass-ad__*` classes. Apps with their own markup can use `adStyleVars(ad.style)`. For rewarded slots,
+`rewardedCountdown(seconds, { onTick, onDone })` runs the timer, and your app grants the reward and
+reports `reward`. `openAdLink` opens `t.me` links inside Telegram when running as a Mini App.
+
+Loading the feed from the browser sends the visitor's IP address to the feed server for that request.
+Nothing is logged, but if you want to avoid even that, fetch the feed (and send events) from your own backend.
 
 ## Telegram bots
 
 ```sh
-pip install "litfass[telegram] @ git+https://github.com/militaernews/litfass@v0.1.0#subdirectory=python"
+pip install "litfass[telegram] @ git+https://github.com/militaernews/litfass@v0.2.0#subdirectory=python"
 ```
 
 ```python
-from litfass import FrequencyCap, load_feed, pick_ad, send_ad
+from litfass import FrequencyCap, fetch_feed, pick_ad, report_events, send_ad
 
-ADS = load_feed("feed.json")
 CAP = FrequencyCap(max_views=1, window=6 * 3600)  # one advert per chat every six hours
 
 async def maybe_advertise(bot, chat_id: int, lang: str | None):
-    ad = pick_ad(ADS, "chat")
+    ads = await fetch_feed(FEED_URL)
+    ad = pick_ad(ads, "chat")
     if ad and CAP.record(chat_id):
         await send_ad(bot, chat_id, ad, lang)
+        await report_events(FEED_URL, [(ad.id, "view")])
 ```
+
+## Running the server
+
+```sh
+cd server
+pip install -r requirements.txt
+LITFASS_TOKEN=… LITFASS_ADMIN_IDS=123,456 LITFASS_PUBLIC_URL=https://ads.example.org python -m litfass_server
+python -m litfass_server.profile   # once: name, descriptions and the logo as profile photo
+```
+
+`LITFASS_DB` (default `data/litfass.db`) and `LITFASS_PORT` (default 3792) are optional.
 
 ## Development
 
 ```sh
-bun install && bun test src && bun run build   # dist/ is committed so git installs need no build step
+bun install && bun test src && bun run build    # dist/ is committed so git installs need no build step
 cd python && pytest -q
+cd server && pip install -r requirements.txt pytest-asyncio pytest-aiohttp && pytest -q
 ```
+
+CI runs all three suites, checks that `dist/` matches the sources and validates the example feed.
 
 MIT licensed.

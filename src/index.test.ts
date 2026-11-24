@@ -70,3 +70,39 @@ describe('frequencyCap', () => {
 		expect(cap.record(new Date(0))).toBe(false);
 	});
 });
+
+describe('v0.2', () => {
+	test('keeps safe style fields and categories', async () => {
+		const { parseAd, adStyleVars, eventUrl } = await import('./index');
+		const ad = parseAd({
+			id: 's',
+			url: 'https://t.me/s',
+			text: { en: text },
+			categories: ['news'],
+			style: { variant: 'poster', background: '#000', color: 'red;}body{x', accent: '#ff0000' }
+		});
+		expect(ad?.style).toEqual({ variant: 'poster', background: '#000', accent: '#ff0000' });
+		expect(adStyleVars(ad?.style)).toEqual({ '--litfass-bg': '#000', '--litfass-accent': '#ff0000' });
+		expect(eventUrl('https://x.example/litfass/v1/feed/abc?x=1')).toBe('https://x.example/litfass/v1/event/abc');
+	});
+
+	test('pickAd matches categories', async () => {
+		const tagged = parseFeed({
+			ads: [
+				{ id: 'news', url: 'https://t.me/n', text: { en: text }, categories: ['news'] },
+				{ id: 'game', url: 'https://t.me/g', text: { en: text }, categories: ['gaming'] }
+			]
+		});
+		expect(pickAd(tagged, { placement: 'banner', categories: ['gaming'] })?.id).toBe('game');
+		expect(pickAd(tagged, { placement: 'banner', categories: ['tech'] })).toBeNull();
+	});
+
+	test('fetchFeed falls back when the server fails', async () => {
+		const { fetchFeed } = await import('./index');
+		const failing = (async () => {
+			throw new Error('offline');
+		}) as unknown as typeof fetch;
+		const feed = await fetchFeed('https://x/v1/feed/k', { fetch: failing, fallback: { ads: [{ id: 'f', url: 'https://t.me/f', text: { en: text } }] } });
+		expect(feed.ads.map((ad) => ad.id)).toEqual(['f']);
+	});
+});

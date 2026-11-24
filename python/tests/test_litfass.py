@@ -46,3 +46,16 @@ def test_frequency_cap():
     assert cap.record(2)
     now[0] = 11
     assert cap.remaining(1) == 2
+
+
+def test_categories_style_and_event_url():
+    from litfass import event_url
+
+    ads = parse_feed({"ads": [
+        {"id": "n", "url": "https://t.me/n", "text": {"en": TEXT}, "categories": ["news"], "style": {"variant": "poster", "bad": 1}},
+        {"id": "g", "url": "https://t.me/g", "text": {"en": TEXT}, "categories": ["gaming"]},
+    ]})
+    assert ads[0].style == {"variant": "poster"}
+    assert pick_ad(ads, "chat", now=NOW, categories=["gaming"]).id == "g"
+    assert pick_ad(ads, "chat", now=NOW, categories=["tech"]) is None
+    assert event_url("https://x/litfass/v1/feed/abc?x=1") == "https://x/litfass/v1/event/abc"

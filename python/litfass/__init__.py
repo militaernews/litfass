@@ -15,7 +15,10 @@ from datetime import datetime, timezone
 from html import escape
 from typing import Any, Callable, Iterable
 
-__all__ = ["Ad", "AdText", "FrequencyCap", "PLACEMENTS", "ad_markup", "ad_html", "load_feed", "parse_feed", "pick_ad", "send_ad"]
+__all__ = [
+    "Ad", "AdText", "FrequencyCap", "PLACEMENTS", "ad_markup", "ad_html", "event_url", "fetch_feed", "load_feed",
+    "parse_feed", "pick_ad", "report_events", "send_ad",
+]
 
 PLACEMENTS = ("rewarded", "banner", "chat")
 
@@ -38,6 +41,13 @@ class Ad:
     end: datetime | None = None
     emoji: str | None = None
     image: str | None = None
+    categories: tuple[str, ...] = ()
+    style: dict[str, str] = field(default_factory=dict)
+
+    def fits(self, categories: Iterable[str] | None) -> bool:
+        """No categories on either side fits everything; otherwise they must share one."""
+        wanted = set(categories or ())
+        return not self.categories or not wanted or bool(wanted & set(self.categories))
 
     def localize(self, lang: str | None) -> AdText:
         """Texts in a language such as `de` or `pt-BR`, falling back to the base language and English."""
@@ -89,6 +99,8 @@ def _ad(raw: Any) -> Ad | None:
             end=_date(raw.get("end")),
             emoji=raw.get("emoji"),
             image=raw.get("image"),
+            categories=tuple(str(c) for c in raw.get("categories") or ()),
+            style={k: v for k, v in (raw.get("style") or {}).items() if isinstance(v, str)},
         )
     except (KeyError, TypeError, ValueError):
         return None
@@ -113,11 +125,14 @@ def pick_ad(
     *,
     now: datetime | None = None,
     exclude: Iterable[str] = (),
+    categories: Iterable[str] | None = None,
     rng: Callable[[], float] = _random.random,
 ) -> Ad | None:
-    """A weighted random advert for the placement; excluded ones only when nothing else runs."""
+    """A weighted random advert for the placement; excluded ones only when nothing else runs.
+    `categories` matches bundled feeds to your content; server feeds are matched already."""
     now = now or datetime.now(timezone.utc)
-    active = [ad for ad in ads if ad.runs(placement, now)]
+    wanted = list(categories or ())
+    active = [ad for ad in ads if ad.runs(placement, now) and ad.fits(wanted)]
     skip = set(exclude)
     pool = [ad for ad in active if ad.id not in skip] or active
     total = sum(ad.weight for ad in pool)
@@ -178,3 +193,49 @@ class FrequencyCap:
             return False
         views.append(self.clock())
         return True
+
+
+def event_url(feed_url: str) -> str:
+    """The event endpoint of a feed URL (`…/v1/feed/<key>` → `…/v1/event/<key>`)."""
+    import re
+
+    return re.sub(r"/v1/feed/([^/?#]+).*$", r"/v1/event/\1", feed_url)
+
+
+def _post(url: str, body: bytes, timeout: float) -> None:
+    from urllib.request import Request, urlopen
+
+    with urlopen(Request(url, data=body, headers={"Content-Type": "text/plain"}, method="POST"), timeout=timeout):
+        pass
+
+
+async def report_events(feed_url: str, events: Iterable[tuple[str, str]], timeout: float = 5) -> bool:
+    """Reports `(ad_id, "view" | "click" | "reward")` pairs; the server keeps daily totals only.
+    Returns False instead of raising when the server cannot be reached."""
+    import asyncio
+    import json
+
+    batch = [{"ad": ad_id, "event": event} for ad_id, event in events][:50]
+    if not batch:
+        return True
+    try:
+        await asyncio.to_thread(_post, event_url(feed_url), json.dumps({"events": batch}).encode(), timeout)
+        return True
+    except OSError:
+        return False
+
+
+async def fetch_feed(feed_url: str, fallback: list[Ad] | None = None, timeout: float = 5) -> list[Ad]:
+    """Loads a feed from a litfass server, or returns `fallback` when that fails."""
+    import asyncio
+    import json
+    from urllib.request import urlopen
+
+    def get() -> bytes:
+        with urlopen(feed_url, timeout=timeout) as response:
+            return response.read()
+
+    try:
+        return parse_feed(json.loads(await asyncio.to_thread(get)))
+    except (OSError, ValueError):
+        return list(fallback or [])
