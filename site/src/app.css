@@ -505,3 +505,241 @@ input[type='color'] {
 .preview .litfass-ad__cta:hover {
 	filter: brightness(1.12);
 }
+
+/* Mobile ------------------------------------------------------------------ */
+@media (max-width: 640px) {
+	.page {
+		max-width: 100%;
+		padding: 76px 14px calc(36px + env(safe-area-inset-bottom));
+	}
+	.hero-mark {
+		width: 100px;
+		height: 100px;
+	}
+	h1 {
+		margin-top: 12px;
+		font-size: clamp(3.2rem, 17vw, 4.6rem);
+	}
+	.lead {
+		font-size: 1rem;
+	}
+	.privacy {
+		max-width: 22rem;
+		margin-inline: auto;
+		font-size: 0.75rem;
+	}
+	.actions {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 8px;
+	}
+	.actions a {
+		justify-content: center;
+		padding: 0.75rem 0.9rem;
+		font-size: 0.9rem;
+	}
+	.actions .tg {
+		grid-column: 1 / -1;
+	}
+	section {
+		margin-bottom: 44px;
+	}
+	.grid,
+	.codes {
+		grid-template-columns: 1fr;
+	}
+	.feature {
+		padding: 18px;
+	}
+	.code pre {
+		padding: 12px;
+		font-size: 0.78rem;
+	}
+	.legal {
+		flex-direction: column;
+		padding: 18px;
+	}
+	.page > footer {
+		padding-bottom: env(safe-area-inset-bottom);
+	}
+
+	/* Controls float without covering content */
+	.controls {
+		inset-block-start: 8px;
+		inset-inline-end: 8px;
+		gap: 4px;
+	}
+	.controls .group {
+		padding: 2px;
+	}
+	.controls .group button {
+		min-width: 26px;
+		height: 26px;
+		padding: 0 5px;
+		font-size: 0.7rem;
+	}
+
+	/* Manager: bottom tab bar and roomy touch targets */
+	.manager {
+		padding: 86px 14px calc(104px + env(safe-area-inset-bottom));
+	}
+	.manager-head {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 8px;
+		padding-bottom: 16px;
+	}
+	.manager-head .brand {
+		font-size: 1.3rem;
+	}
+	.manager-head h1 {
+		font-size: 1.7rem;
+	}
+	.wallet {
+		gap: 6px;
+		font-size: 0.72rem;
+	}
+	.tabs {
+		position: fixed;
+		inset: auto 0 0;
+		z-index: 20;
+		justify-content: space-around;
+		gap: 4px;
+		margin: 0;
+		padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+		border-top: 1px solid var(--line);
+		border-bottom: 0;
+		background: var(--card);
+		box-shadow: 0 -10px 30px #0002;
+	}
+	.tabs button {
+		flex: 1;
+		flex-direction: column;
+		gap: 4px;
+		min-height: 52px;
+		padding: 6px 2px;
+		border: 0;
+		border-radius: 12px;
+		font-size: 0.7rem;
+	}
+	.tabs button.active {
+		background: var(--green);
+		color: var(--bg);
+	}
+	.toolbar {
+		flex-direction: column;
+		align-items: stretch;
+	}
+	.toolbar .primary {
+		width: 100%;
+		min-height: 46px;
+	}
+	button:not(.tabs button) {
+		min-height: 42px;
+	}
+	.ad-list li {
+		flex-direction: column;
+		align-items: stretch;
+		gap: 12px;
+		padding: 14px;
+	}
+	.ad-main .emoji {
+		font-size: 1.6rem;
+	}
+	.row-actions {
+		width: 100%;
+	}
+	.row-actions button {
+		flex: 1;
+	}
+	.stat-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 8px;
+	}
+	.stat {
+		padding: 12px;
+	}
+	.stat strong {
+		font-size: 1.4rem;
+	}
+	.chart {
+		height: 110px;
+		overflow-x: auto;
+	}
+	.bar {
+		flex: none;
+		min-width: 8px;
+	}
+	.dev-panel {
+		flex-direction: column;
+		align-items: stretch;
+	}
+	.dev-panel input {
+		width: 100%;
+	}
+
+	/* Editor as a bottom sheet */
+	.modal {
+		place-items: end center;
+		padding: 0;
+	}
+	.sheet {
+		width: 100%;
+		max-height: 92svh;
+		border-radius: 20px 20px 0 0;
+		padding: 16px 16px calc(18px + env(safe-area-inset-bottom));
+	}
+	.sheet header {
+		position: sticky;
+		inset-block-start: -16px;
+		z-index: 1;
+		padding: 4px 0 10px;
+		background: var(--bg);
+	}
+	.sheet footer {
+		position: sticky;
+		inset-block-end: -18px;
+		z-index: 1;
+		padding: 12px 0 4px;
+		background: var(--bg);
+	}
+	.sheet footer button {
+		flex: 1;
+	}
+	input,
+	select {
+		min-height: 44px;
+	}
+	input[type='checkbox'],
+	input[type='color'] {
+		min-height: auto;
+	}
+
+	/* Login and error cards */
+	.login-shell {
+		padding: 80px 12px calc(24px + env(safe-area-inset-bottom));
+	}
+	.login-card,
+	.error-card {
+		width: 100%;
+		padding: 26px 18px;
+		border-radius: 20px;
+	}
+	.login-card > img {
+		width: 64px;
+		height: 64px;
+	}
+	.login-card h1 {
+		font-size: 2rem;
+	}
+	.tg,
+	.error-actions a,
+	.error-actions button {
+		width: 100%;
+		justify-content: center;
+	}
+	.error-actions {
+		flex-direction: column;
+	}
+}
+
