@@ -8,6 +8,6 @@ export default defineConfig({
 	server: {
 		host: '0.0.0.0',
 		// The feed server runs next to its database; in dev it is reached through this proxy.
-		proxy: { '/litfass': { target: import.meta.env.VITE_API_ORIGIN ?? 'http://localhost:3792', changeOrigin: true } }
+		proxy: { '/litfass': { target: import.meta.env?.VITE_API_ORIGIN ?? 'http://localhost:3792', changeOrigin: true } }
 	}
 });
