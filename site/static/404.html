@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="robots" content="noindex" />
+		<title>404 · litfass</title>
+		<style>
+			:root {
+				color-scheme: light dark;
+				--bg: #eef6fc;
+				--bg-2: #dcecf8;
+				--ink: #0b1d33;
+				--muted: #4a5d73;
+				--green: #0c3a6b;
+				--red: #0a7fbf;
+				--card: #fff;
+			}
+			@media (prefers-color-scheme: dark) {
+				:root {
+					--bg: #1b1029;
+					--bg-2: #120a1d;
+					--ink: #e6f6ff;
+					--muted: #9fb6c9;
+					--green: #9be7ff;
+					--red: #2ec5ff;
+					--card: #0c2547;
+				}
+			}
+			* { box-sizing: border-box; }
+			body {
+				min-height: 100svh;
+				margin: 0;
+				display: grid;
+				place-items: center;
+				padding: 1.5rem;
+				font: 17px/1.55 system-ui, -apple-system, 'Segoe UI', 'Noto Sans', sans-serif;
+				background: radial-gradient(circle at 50% 15%, var(--bg-2), var(--bg) 60%);
+				color: var(--ink);
+			}
+			.card {
+				width: min(100%, 30rem);
+				padding: clamp(1.8rem, 7vw, 3rem);
+				border: 1px solid var(--bg-2);
+				border-radius: 22px;
+				background: var(--card);
+				box-shadow: 0 20px 60px #0002;
+				text-align: center;
+			}
+			.icon { display: block; font-size: 3.5rem; line-height: 1; }
+			.code { margin: 0.9rem 0 0; color: var(--red); font-size: 0.8rem; font-weight: 800; letter-spacing: 0.2em; }
+			h1 { margin: 0.4rem 0 0.8rem; color: var(--green); font-size: clamp(1.8rem, 7vw, 2.6rem); letter-spacing: -0.04em; line-height: 1.05; }
+			p.body { margin: 0 auto 1.6rem; max-width: 24rem; color: var(--muted); }
+			.actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+			a.button {
+				display: inline-block;
+				padding: 0.6rem 1.1rem;
+				border-radius: 999px;
+				background: var(--green);
+				color: var(--bg);
+				font-weight: 700;
+				text-decoration: none;
+			}
+			a.secondary { background: transparent; color: var(--green); box-shadow: inset 0 0 0 2px var(--green); }
+		</style>
+	</head>
+	<body>
+		<main class="card">
+			<span class="icon" aria-hidden="true">🪧</span>
+			<p class="code">404</p>
+			<h1>This page went missing</h1>
+			<p class="body">The link may be old, or the page may have moved. The posters are still here.</p>
+			<div class="actions">
+				<a class="button" href="/">Back to litfass</a>
+				<a class="button secondary" href="https://militaernews.vercel.app">Militär News</a>
+			</div>
+		</main>
+	</body>
+</html>
