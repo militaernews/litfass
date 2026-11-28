@@ -2,6 +2,7 @@ import adapter from '@sveltejs/adapter-static';
 import { paraglideVitePlugin } from '@inlang/paraglide-js';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
+import Icons from 'unplugin-icons/vite';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
@@ -12,7 +13,8 @@ export default defineConfig({
 			// A manual choice is remembered; otherwise the browser language decides
 			strategy: ['localStorage', 'preferredLanguage', 'baseLocale']
 		}),
-		sveltekit({ preprocess: vitePreprocess(), adapter: adapter() })
+		sveltekit({ preprocess: vitePreprocess(), adapter: adapter() }),
+		Icons({ compiler: 'svelte' })
 	],
 	server: {
 		host: '0.0.0.0',

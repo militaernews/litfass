@@ -105,5 +105,18 @@
   "language": "Language",
   "themeSystem": "Match the system",
   "themeLight": "Light",
-  "themeDark": "Dark"
+  "themeDark": "Dark",
+  "signUp": "Sign up with Telegram",
+  "welcome": "Welcome",
+  "signInContinue": "Sign in to manage your adverts.",
+  "steps": "Three steps",
+  "step1Title": "Register",
+  "step2Title": "Pick content",
+  "step3Title": "Use the feed",
+  "privacyNote": "No ad network. No cookies. Only your own adverts.",
+  "openInTelegram": "Open in Telegram",
+  "manageHint": "Manage your adverts, placements and statistics.",
+  "newAd": "New advert",
+  "sectionTools": "Tools",
+  "builtWith": "Built with"
 }

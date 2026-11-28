@@ -105,5 +105,18 @@
   "language": "Sprache",
   "themeSystem": "Wie das System",
   "themeLight": "Hell",
-  "themeDark": "Dunkel"
+  "themeDark": "Dunkel",
+  "signUp": "Mit Telegram registrieren",
+  "welcome": "Willkommen",
+  "signInContinue": "Melde dich an, um Anzeigen zu verwalten.",
+  "steps": "In drei Schritten",
+  "step1Title": "Registrieren",
+  "step2Title": "Inhalte wählen",
+  "step3Title": "Feed nutzen",
+  "privacyNote": "Kein Ad-Netzwerk. Keine Cookies. Nur deine eigenen Anzeigen.",
+  "openInTelegram": "In Telegram öffnen",
+  "manageHint": "Verwalte deine Anzeigen, Werbeplätze und Statistiken.",
+  "newAd": "Neue Anzeige",
+  "sectionTools": "Werkzeuge",
+  "builtWith": "Gebaut mit"
 }

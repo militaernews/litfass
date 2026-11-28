@@ -1,6 +1,18 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
+	import IconPlus from '~icons/lucide/plus';
+	import IconPencil from '~icons/lucide/pencil';
+	import IconTrash2 from '~icons/lucide/trash-2';
+	import IconCopy from '~icons/lucide/copy';
+	import IconEye from '~icons/lucide/eye';
+	import IconMousePointerClick from '~icons/lucide/mouse-pointer-click';
+	import IconGift from '~icons/lucide/gift';
+	import IconChart from '~icons/lucide/chart-no-axes-column-increasing';
+	import IconLayoutGrid from '~icons/lucide/layout-grid';
+	import IconMapPin from '~icons/lucide/map-pinned';
+	import IconSettings2 from '~icons/lucide/settings-2';
+	import IconX from '~icons/lucide/x';
 	import { injectAdStyles, renderAd, type Ad, type AdStyle } from '@militaernews/litfass';
 	import { call, setDevInitData } from './api';
 	import { m } from './paraglide/messages.js';
@@ -242,15 +254,15 @@
 	{/if}
 
 	<nav class="tabs" aria-label={s('managerTitle')}>
-		<button class:active={tab === 'ads'} onclick={() => (tab = 'ads')}>{s('tabsAds')}</button>
-		<button class:active={tab === 'placements'} onclick={() => (tab = 'placements')}>{s('tabsPlacements')}</button>
-		<button class:active={tab === 'stats'} onclick={() => (tab = 'stats')}>{s('tabsStats')}</button>
+		<button class:active={tab === 'ads'} onclick={() => (tab = 'ads')}><IconLayoutGrid /> {s('tabsAds')}</button>
+		<button class:active={tab === 'placements'} onclick={() => (tab = 'placements')}><IconMapPin /> {s('tabsPlacements')}</button>
+		<button class:active={tab === 'stats'} onclick={() => (tab = 'stats')}><IconChart /> {s('tabsStats')}</button>
 	</nav>
 
 	{#if tab === 'ads'}
 		<div class="toolbar">
 			<p>{s('adsHint')}</p>
-			{#if me?.admin}<button class="primary" onclick={openCreate}>{s('newAdvert')}</button>{/if}
+			{#if me?.admin}<button class="primary" onclick={openCreate}><IconPlus /> {s('newAdvert')}</button>{/if}
 		</div>
 		{#if ads.length === 0}
 			<p class="empty">{s('noAds')}</p>
@@ -272,8 +284,8 @@
 						</div>
 						{#if me?.admin}
 							<div class="row-actions">
-								<button onclick={() => openEdit(ad)}>{s('edit')}</button>
-								<button class="danger" disabled={busy} onclick={() => remove(ad)}>{s('delete')}</button>
+								<button onclick={() => openEdit(ad)}><IconPencil /> {s('edit')}</button>
+								<button class="danger" disabled={busy} onclick={() => remove(ad)}><IconTrash2 /> {s('delete')}</button>
 							</div>
 						{/if}
 					</li>
@@ -295,7 +307,7 @@
 							</div>
 							<code class="key">{publisher.key}</code>
 						</div>
-						<button onclick={() => navigator.clipboard.writeText(publisher.key)}>{s('copyKey')}</button>
+						<button onclick={() => navigator.clipboard.writeText(publisher.key)}><IconCopy /> {s('copyKey')}</button>
 					</li>
 				{/each}
 			</ul>
@@ -303,10 +315,10 @@
 	{:else}
 		{#if stats}
 			<div class="stat-grid">
-				<div class="stat"><span>{s('views7')}</span><strong>{stats.totals['7'].view.toLocaleString()}</strong></div>
-				<div class="stat"><span>{s('clicks7')}</span><strong>{stats.totals['7'].click.toLocaleString()}</strong></div>
-				<div class="stat"><span>{s('rewarded7')}</span><strong>{stats.totals['7'].reward.toLocaleString()}</strong></div>
-				<div class="stat"><span>{s('clickRate')}</span><strong>{ctr(stats.totals['7'])}</strong></div>
+				<div class="stat"><span><IconEye /> {s('views7')}</span><strong>{stats.totals['7'].view.toLocaleString()}</strong></div>
+				<div class="stat"><span><IconMousePointerClick /> {s('clicks7')}</span><strong>{stats.totals['7'].click.toLocaleString()}</strong></div>
+				<div class="stat"><span><IconGift /> {s('rewarded7')}</span><strong>{stats.totals['7'].reward.toLocaleString()}</strong></div>
+				<div class="stat"><span><IconChart /> {s('clickRate')}</span><strong>{ctr(stats.totals['7'])}</strong></div>
 			</div>
 			<h2>{s('last30')}</h2>
 			<div class="chart">
@@ -335,8 +347,8 @@
 	<div class="modal" role="dialog" aria-modal="true" aria-label={s('managerTitle')}>
 		<div class="sheet">
 			<header>
-				<h2>{editingId ? s('editAdvert') : s('createAdvert')}</h2>
-				<button onclick={() => (formOpen = false)} aria-label={s('close')}>×</button>
+				<h2><IconSettings2 /> {editingId ? s('editAdvert') : s('createAdvert')}</h2>
+				<button onclick={() => (formOpen = false)} aria-label={s('close')}><IconX /></button>
 			</header>
 			<div class="form-grid">
 				<label class="wide">{s('link')}<input type="url" bind:value={draft.url} /></label>

@@ -1,11 +1,29 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import IconArrowRight from '~icons/lucide/arrow-right';
+	import IconExternalLink from '~icons/lucide/external-link';
+	import IconBookOpen from '~icons/lucide/book-open';
+	import IconLayoutGrid from '~icons/lucide/layout-grid';
+	import IconBot from '~icons/lucide/bot';
+	import IconGamepad2 from '~icons/lucide/gamepad-2';
+	import IconUsersRound from '~icons/lucide/users-round';
+	import IconChart from '~icons/lucide/chart-no-axes-column-increasing';
+	import IconGlobe from '~icons/lucide/globe';
+	import IconLanguages from '~icons/lucide/languages';
+	import IconScanEye from '~icons/lucide/scan-eye';
+	import IconRadio from '~icons/lucide/radio';
+	import IconMegaphone from '~icons/lucide/megaphone';
+	import IconShieldCheck from '~icons/lucide/shield-check';
+	import IconSparkles from '~icons/lucide/sparkles';
+	import IconSend from '~icons/lucide/send';
+	import IconCode from '~icons/lucide/code-xml';
+	import IconTerminal from '~icons/lucide/terminal';
 	import { injectAdStyles, renderAd, type Ad, type AdStyle } from '@militaernews/litfass';
 	import { m } from './paraglide/messages.js';
 	import { localeState } from './locale.svelte';
 	import { highlight } from './highlight';
 
-	const s = (key: string, values?: Record<string, string>) => (m as unknown as Record<string, ((v?: Record<string, string>) => string) | undefined>)[key]?.(values) ?? '';
+	const s = (key: string) => (m as unknown as Record<string, (() => string) | undefined>)[key]?.() ?? '';
 
 	const webCode = `// Web: bun add github:militaernews/litfass
 import { createReporter, eventUrl, fetchFeed, injectAdStyles, pickAd, renderAd } from '@militaernews/litfass';
@@ -41,6 +59,18 @@ if ad and CAP.record(chat_id):
 		...extra
 	});
 
+	const features = [
+		{ icon: IconGlobe, title: 'card1Title', text: 'card1Text' },
+		{ icon: IconLayoutGrid, title: 'card2Title', text: 'card2Text' },
+		{ icon: IconSparkles, title: 'card3Title', text: 'card3Text' },
+		{ icon: IconChart, title: 'card4Title', text: 'card4Text' }
+	];
+	const steps = [
+		{ icon: IconBot, title: 'step1Title' },
+		{ icon: IconLanguages, title: 'step2Title' },
+		{ icon: IconCode, title: 'step3Title' }
+	];
+
 	let demo: HTMLDivElement | undefined = $state();
 
 	onMount(() => {
@@ -62,61 +92,87 @@ if ad and CAP.record(chat_id):
 	<meta name="twitter:card" content="summary_large_image" />
 	<link rel="icon" href="/logo.png" />
 </svelte:head>
+
 {#key localeState.value}
-
-<main>
-	<header>
-		<img src="/logo.png" alt="An advertising pillar on a radar screen" width="180" height="180" />
-		<div>
-			<h1>litfass</h1>
+	<main class="page">
+		<section class="hero">
+			<img class="hero-mark" src="/logo.png" alt="An advertising pillar on a radar screen" width="148" height="148" />
+			<p class="eyebrow"><IconSparkles /> {s('tags')}</p>
+			<h1>litfass<span>.</span></h1>
 			<p class="lead">{s('lead')}</p>
-			<p class="tags">{s('tags')}</p>
 			<div class="actions">
-				<a class="button" href="https://t.me/litfass_advertisement_bot">{s('openBot')}</a>
-				<a class="button secondary" href={'/manage'}>{s('manage')}</a>
-				<a class="button secondary" href="https://militaernews.vercel.app">{s('militaerNews')}</a>
+				<a class="tg" href="https://t.me/litfass_advertisement_bot?startapp=manage" target="_blank" rel="noreferrer">
+					<IconSend /> <span>{s('signUp')}</span>
+				</a>
+				<a class="button" href="/manage"><IconArrowRight /> {s('manage')}</a>
+				<a class="button ghost" href="https://militaernews.vercel.app" target="_blank" rel="noreferrer">
+					{s('militaerNews')} <IconExternalLink />
+				</a>
 			</div>
-		</div>
-	</header>
+			<p class="privacy"><IconShieldCheck /> {s('privacyNote')}</p>
+		</section>
 
-	<h2>{s('whatItDoes')}</h2>
-	<div class="grid">
-		<div class="card">
-			<h3>{s('card1Title')}</h3>
-			<p>{s('card1Text')}</p>
-		</div>
-		<div class="card">
-			<h3>{s('card2Title')}</h3>
-			<p>{s('card2Text')}</p>
-		</div>
-		<div class="card">
-			<h3>{s('card3Title')}</h3>
-			<p>{s('card3Text')}</p>
-		</div>
-		<div class="card">
-			<h3>{s('card4Title')}</h3>
-			<p>{s('card4Text')}</p>
-		</div>
-	</div>
+		<section>
+			<h2>{s('whatItDoes')}</h2>
+			<div class="grid">
+				{#each features as feature (feature.title)}
+					<article class="feature">
+						<span class="feature-icon"><feature.icon /></span>
+						<h3>{s(feature.title)}</h3>
+						<p>{s(feature.text)}</p>
+					</article>
+				{/each}
+			</div>
+		</section>
 
-	<h2>{s('looksLike')}</h2>
-	<div class="demo" bind:this={demo}></div>
+		<section>
+			<h2>{s('looksLike')}</h2>
+			<div class="showcase">
+				<div class="showcase-head"><IconBookOpen /> {s('looksLike')}</div>
+				<div class="demo" bind:this={demo}></div>
+			</div>
+		</section>
 
-	<h2>{s('showInProject')}</h2>
-	<ol>
-		<li>{s('step1')} <a href="https://t.me/litfass_advertisement_bot">@litfass_advertisement_bot</a> {@html s('step1b')}</li>
-		<li>{s('step2')}</li>
-		<li>{@html s('step3')}</li>
-	</ol>
-	<pre><code class="hljs">{@html webHtml}</code></pre>
-	<p></p>
-	<pre><code class="hljs">{@html botHtml}</code></pre>
+		<section>
+			<h2>{s('steps')}</h2>
+			<ol class="steps">
+				{#each steps as step, index (step.title)}
+					<li>
+						<span class="step-num">{index + 1}</span>
+						<span class="step-icon"><step.icon /></span>
+						<strong>{s(step.title)}</strong>
+					</li>
+				{/each}
+			</ol>
+			<div class="howto">
+				<p>{s('step1')} <a href="https://t.me/litfass_advertisement_bot">@litfass_advertisement_bot</a> {@html s('step1b')}</p>
+				<p>{s('step2')}</p>
+				<p>{@html s('step3')}</p>
+			</div>
+		</section>
 
-	<h2>{s('keepLegal')}</h2>
-	<p>{s('legalText')}</p>
+		<section>
+			<h2>{s('showInProject')}</h2>
+			<div class="codes">
+				<div class="code">
+					<div class="code-head"><IconCode /> Web · TypeScript</div>
+					<pre><code class="hljs">{@html webHtml}</code></pre>
+				</div>
+				<div class="code">
+					<div class="code-head"><IconTerminal /> Telegram · Python</div>
+					<pre><code class="hljs">{@html botHtml}</code></pre>
+				</div>
+			</div>
+		</section>
 
-	<footer>
-		{s('footer')} <a href="https://militaernews.vercel.app">{s('militaerNews')}</a>
-	</footer>
-</main>
+		<section class="legal">
+			<IconShieldCheck />
+			<div><h2>{s('keepLegal')}</h2><p>{s('legalText')}</p></div>
+		</section>
+
+		<footer>
+			<span>{s('footer')} <a href="https://militaernews.vercel.app">{s('militaerNews')}</a></span>
+			<span>{s('builtWith')} <a href="https://svelte.dev" target="_blank" rel="noreferrer">SvelteKit</a></span>
+		</footer>
+	</main>
 {/key}

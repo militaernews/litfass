@@ -1,5 +1,9 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import IconHouse from '~icons/lucide/house';
+	import IconArrowLeft from '~icons/lucide/arrow-left';
+	import IconRefreshCw from '~icons/lucide/refresh-cw';
+	import IconSend from '~icons/logos/telegram';
 	import { m } from '../lib/paraglide/messages.js';
 	import { localeState } from '../lib/locale.svelte';
 
@@ -30,18 +34,18 @@
 
 <main class="error-shell">
 	<section class="error-card">
-		<span class="error-icon" aria-hidden="true">{notFound ? '🪧' : '📰'}</span>
+		<span class="error-icon" aria-hidden="true">{#if unauthorized}<IconSend />{:else if notFound}<IconHouse />{:else}<IconRefreshCw />{/if}</span>
 		<p class="error-code">{status}</p>
 		<h1>{title}</h1>
 		<p class="error-body">{body}</p>
 		<div class="error-actions">
 			{#if unauthorized}
-				<a class="button" href="/login">{s('signIn')}</a>
+				<a class="button" href="/login"><IconSend /> {s('signIn')}</a>
 			{:else}
-				<a class="button" href="/">{s('backHome')}</a>
+				<a class="button" href="/"><IconArrowLeft /> {s('backHome')}</a>
 			{/if}
 			<a class="button secondary" href="https://militaernews.vercel.app">{s('militaerNews')}</a>
-			{#if !notFound && !unauthorized}<button onclick={() => location.reload()}>{s('tryAgain')}</button>{/if}
+			{#if !notFound && !unauthorized}<button onclick={() => location.reload()}><IconRefreshCw /> {s('tryAgain')}</button>{/if}
 		</div>
 	</section>
 </main>
@@ -93,5 +97,8 @@
 		justify-content: center;
 		gap: 10px;
 	}
+	.error-icon :global(svg) { width: 54px; height: 54px; }
+	.error-actions a, .error-actions button { display: inline-flex; align-items: center; gap: 8px; }
+	.error-actions :global(svg) { width: 16px; height: 16px; }
 </style>
 {/key}
