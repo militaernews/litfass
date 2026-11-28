@@ -541,6 +541,116 @@ input[type='color'] {
 	font-weight: 500;
 }
 
+/* Manager statistics ------------------------------------------------------ */
+.stats-head {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+	margin-bottom: 18px;
+}
+.range,
+.series-toggles {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+}
+.range button,
+.series-toggles button {
+	padding: 0.45rem 0.9rem;
+	border: 1px solid var(--line);
+	border-radius: 999px;
+	background: var(--card);
+	color: var(--muted);
+	font: inherit;
+	font-size: 0.8rem;
+	font-weight: 700;
+	cursor: pointer;
+}
+.range button.active,
+.series-toggles button.active {
+	background: var(--green);
+	border-color: var(--green);
+	color: var(--accent-ink);
+}
+.stat small.up {
+	color: #0a7f5b;
+}
+.stat small.down {
+	color: #b42318;
+}
+.stats-panel {
+	margin-top: 18px;
+	padding: 20px;
+	border: 1px solid var(--line);
+	border-radius: 16px;
+	background: var(--card);
+}
+.stats-panel h2 {
+	margin: 0 0 14px;
+	font-size: 1.15rem;
+}
+.line-chart {
+	display: block;
+	width: 100%;
+	height: 180px;
+	overflow: visible;
+}
+.axis {
+	display: flex;
+	justify-content: space-between;
+	color: var(--muted);
+	font-size: 0.72rem;
+}
+.funnel {
+	display: grid;
+	gap: 10px;
+}
+.funnel > div {
+	position: relative;
+	display: flex;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 10px 14px;
+	overflow: hidden;
+	border-radius: 10px;
+	background: var(--bg);
+}
+.funnel-bar {
+	position: absolute;
+	inset-block-start: 0;
+	inset-inline-start: 0;
+	bottom: 0;
+	background: var(--bg-2);
+	z-index: 0;
+}
+.funnel span,
+.funnel strong {
+	position: relative;
+	z-index: 1;
+}
+.table-wrap {
+	overflow-x: auto;
+}
+table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 0.88rem;
+}
+th,
+td {
+	padding: 9px 10px;
+	text-align: start;
+	border-bottom: 1px solid var(--line);
+}
+th {
+	color: var(--muted);
+	font-size: 0.75rem;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+}
+
 /* Guide ------------------------------------------------------------------- */
 .guide-head {
 	padding: 8px 0 26px;

@@ -98,6 +98,96 @@ def network_report(store: Store, today: date | None = None) -> dict:
     }
 
 
+def deep_report(store: Store, days: int = 30, owner_id: int | None = None, today: date | None = None) -> dict:
+    """Totals, previous-period comparison, daily series, per-ad and per-placement breakdowns."""
+    today = today or date.today()
+    empty = {"view": 0, "click": 0, "reward": 0}
+    start = since(days, today)
+    previous_start = since(days * 2, today)
+    previous_end = (today - timedelta(days=days)).isoformat()
+    scope_ads = [ad for ad in store.list_ads() if owner_id is None or ad.get("created_by") == owner_id]
+    ads = {ad["id"]: ad for ad in scope_ads}
+    placements = store.publishers(None if owner_id is None else owner_id)
+
+    ad_ids = [ad["id"] for ad in scope_ads]
+    publisher_ids = [p["id"] for p in placements]
+
+    def totals(begin: str, end: str | None = None) -> dict:
+        where, params = ["day >= ?"], [begin]
+        if end:
+            where.append("day < ?")
+            params.append(end)
+        if owner_id is not None:
+            where.append("ad_id IN (%s)" % ",".join("?" for _ in ad_ids) if ad_ids else "1=0")
+            params.extend(ad_ids)
+            where.append("publisher_id IN (%s)" % ",".join("?" for _ in publisher_ids) if publisher_ids else "1=0")
+            params.extend(publisher_ids)
+        rows = store.db.execute(
+            f"SELECT event, SUM(count) AS n FROM stats WHERE {' AND '.join(where)} GROUP BY event", params
+        )
+        result = dict(empty)
+        for row in rows:
+            result[row["event"]] = row["n"]
+        return result
+
+    current = totals(start)
+    previous = totals(previous_start, previous_end)
+
+    scope = {} if owner_id is None else {"ad_ids": ad_ids, "publisher_ids": publisher_ids}
+    per_day = store.totals(start, by="day", **scope)
+    series = [
+        {"day": (today - timedelta(days=offset)).isoformat(), **per_day.get((today - timedelta(days=offset)).isoformat(), empty)}
+        for offset in range(days - 1, -1, -1)
+    ]
+
+    per_ad = store.totals(start, by="ad_id", **scope)
+    ad_rows = []
+    for ad_id, events in sorted(per_ad.items(), key=lambda item: item[1]["view"], reverse=True):
+        ad = ads.get(ad_id)
+        if ad is None and owner_id is not None:
+            continue
+        title = (ad or {}).get("text", {}).get("en", {}).get("title") or ad_id
+        ad_rows.append(
+            {
+                "id": ad_id,
+                "title": title,
+                "views": events["view"],
+                "clicks": events["click"],
+                "rewards": events["reward"],
+                "ctr": round(events["click"] / events["view"] * 100, 1) if events["view"] else 0.0,
+            }
+        )
+
+    per_publisher = store.totals(start, by="publisher_id", **scope)
+    placement_rows = []
+    for publisher in placements:
+        events = per_publisher.get(publisher["id"], empty)
+        placement_rows.append(
+            {
+                "id": publisher["id"],
+                "name": publisher["name"],
+                "views": events["view"],
+                "clicks": events["click"],
+                "rewards": events["reward"],
+                "ctr": round(events["click"] / events["view"] * 100, 1) if events["view"] else 0.0,
+            }
+        )
+
+    def ctr(value: dict) -> float:
+        return round(value["click"] / value["view"] * 100, 1) if value["view"] else 0.0
+
+    return {
+        "days": days,
+        "totals": current,
+        "previous": previous,
+        "ctr": ctr(current),
+        "previousCtr": ctr(previous),
+        "series": series,
+        "ads": ad_rows,
+        "placements": placement_rows,
+    }
+
+
 def overview(store: Store, title: str, names: dict, *, by: str, today: date | None = None, lang: str = "en", **scope) -> str:
     """The last 7 and 30 days for one scope (an advert, a publisher or everything), broken down by `by`."""
     today = today or date.today()

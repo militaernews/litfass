@@ -310,7 +310,16 @@ class Store:
             )
         return True
 
-    def totals(self, since: str, *, ad_id: str | None = None, publisher_id: int | None = None, by: str | None = None) -> dict:
+    def totals(
+        self,
+        since: str,
+        *,
+        ad_id: str | None = None,
+        publisher_id: int | None = None,
+        ad_ids: list[str] | None = None,
+        publisher_ids: list[int] | None = None,
+        by: str | None = None,
+    ) -> dict:
         """Event totals since a day (inclusive), optionally for one ad or publisher, optionally grouped
         by `ad_id`, `publisher_id` or `day`: {group: {event: count}} (group None when ungrouped)."""
         if by not in (None, "ad_id", "publisher_id", "day"):
@@ -322,6 +331,12 @@ class Store:
         if publisher_id is not None:
             where.append("publisher_id = ?")
             params.append(publisher_id)
+        if ad_ids is not None:
+            where.append("ad_id IN (%s)" % ",".join("?" for _ in ad_ids) if ad_ids else "1=0")
+            params.extend(ad_ids)
+        if publisher_ids is not None:
+            where.append("publisher_id IN (%s)" % ",".join("?" for _ in publisher_ids) if publisher_ids else "1=0")
+            params.extend(publisher_ids)
         group = by or "NULL"
         rows = self.db.execute(
             f"SELECT {group} AS grp, event, SUM(count) AS n FROM stats WHERE {' AND '.join(where)} GROUP BY grp, event",

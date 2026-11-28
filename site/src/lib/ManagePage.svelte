@@ -30,23 +30,15 @@
 		click: number;
 		reward: number;
 	}
-	interface Campaign {
-		id: string;
-		title: string;
-		paid: boolean;
-		paused: boolean;
-		views: number;
-		clicks: number;
-		rewards: number;
-		views7: number;
-		clicks7: number;
-		ctr: number;
-	}
 	interface Stats {
-		totals: { 7: Events; 30: Events };
-		days: Array<{ day: string } & Events>;
-		ads: Array<{ id: string; title: string | null } & Events>;
-		campaigns?: Campaign[];
+		days: number;
+		totals: Events;
+		previous: Events;
+		ctr: number;
+		previousCtr: number;
+		series: Array<{ day: string } & Events>;
+		ads: Array<{ id: string; title: string; views: number; clicks: number; rewards: number; ctr: number }>;
+		placements: Array<{ id: number; name: string; views: number; clicks: number; rewards: number; ctr: number }>;
 	}
 	interface ManagedAd extends Ad {
 		paused?: boolean;
@@ -106,6 +98,8 @@
 	let ads = $state<ManagedAd[]>([]);
 	let publishers = $state<Array<{ id: number; name: string; key: string; kind: string; blocked: boolean; allow_free: number | boolean }>>([]);
 	let stats = $state<Stats | null>(null);
+	let days = $state<7 | 30 | 90>(30);
+	let visible = $state({ view: true, click: true, reward: true });
 	let tab = $state<'ads' | 'placements' | 'stats'>('ads');
 	let draft = $state<Draft>(emptyDraft());
 	let editingId = $state<string | null>(null);
@@ -131,7 +125,7 @@
 			call<Me>('me'),
 			call<{ ads: ManagedAd[] }>('list_ads'),
 			call<{ publishers: typeof publishers }>('publishers'),
-			call<{ stats: Stats }>('stats')
+			call<{ stats: Stats }>('stats', { days })
 		]);
 		me = identity;
 		ads = adverts.ads;
@@ -249,8 +243,34 @@
 	}
 
 	const ctr = (events: Events) => (events.view ? `${((events.click / events.view) * 100).toFixed(1)}%` : '–');
+	const delta = (current: number, previous: number) => (previous ? Math.round(((current - previous) / previous) * 100) : 0);
 	const title = (ad: { text?: Record<string, { title: string }> }, id: string) => ad.text?.[localeState.value]?.title ?? ad.text?.en?.title ?? id;
-	const maxViews = $derived(Math.max(1, ...(stats?.days.map((day) => day.view) ?? [])));
+
+	const lines = $derived.by(() => {
+		const data = stats?.series ?? [];
+		const max = Math.max(1, ...data.flatMap((day) => [day.view, day.click, day.reward]));
+		const points = (key: keyof Events) =>
+			data
+				.map((day, index) => `${data.length < 2 ? 50 : (index / (data.length - 1)) * 100},${100 - (day[key] / max) * 100}`)
+				.join(' ');
+		return { view: points('view'), click: points('click'), reward: points('reward'), max };
+	});
+
+	async function setDays(value: 7 | 30 | 90) {
+		days = value;
+		await reload();
+	}
+
+	function exportCsv() {
+		const rows = [['day', 'views', 'clicks', 'rewards'], ...(stats?.series ?? []).map((d) => [d.day, d.view, d.click, d.reward])];
+		const blob = new Blob([rows.map((row) => row.join(',')).join('\n')], { type: 'text/csv' });
+		const url = URL.createObjectURL(blob);
+		const link = document.createElement('a');
+		link.href = url;
+		link.download = `litfass-stats-${days}d.csv`;
+		link.click();
+		URL.revokeObjectURL(url);
+	}
 </script>
 
 <svelte:head>
@@ -359,39 +379,73 @@
 		{/if}
 	{:else}
 		{#if stats}
-			{#if stats.campaigns?.length}
-				<h2>{s('campaigns')}</h2>
-				<div class="stat-grid">
-					{#each stats.campaigns as campaign (campaign.id)}
-						<div class="stat"><span>{campaign.title}</span><strong>{campaign.ctr}%</strong><small>{campaign.views} {s('views')} · {campaign.clicks} {s('clicks')} · {s('ctr')}</small></div>
-					{/each}
+			<div class="stats-head">
+				<div class="range">
+					<button class:active={days === 7} onclick={() => setDays(7)}>{s('last7')}</button>
+					<button class:active={days === 30} onclick={() => setDays(30)}>{s('last30')}</button>
+					<button class:active={days === 90} onclick={() => setDays(90)}>{s('last90')}</button>
 				</div>
-			{:else}
-				<p class="empty">{s('noCampaigns')}</p>
-			{/if}
+				<button onclick={exportCsv}><IconCopy /> {s('exportCsv')}</button>
+			</div>
+
 			<div class="stat-grid">
-				<div class="stat"><span><IconEye /> {s('views7')}</span><strong>{stats.totals['7'].view.toLocaleString()}</strong></div>
-				<div class="stat"><span><IconMousePointerClick /> {s('clicks7')}</span><strong>{stats.totals['7'].click.toLocaleString()}</strong></div>
-				<div class="stat"><span><IconGift /> {s('rewarded7')}</span><strong>{stats.totals['7'].reward.toLocaleString()}</strong></div>
-				<div class="stat"><span><IconChart /> {s('clickRate')}</span><strong>{ctr(stats.totals['7'])}</strong></div>
+				<div class="stat"><span><IconEye /> {s('views')}</span><strong>{stats.totals.view.toLocaleString()}</strong><small class:up={delta(stats.totals.view, stats.previous.view) >= 0} class:down={delta(stats.totals.view, stats.previous.view) < 0}>{delta(stats.totals.view, stats.previous.view)}% {s('vsPrevious')}</small></div>
+				<div class="stat"><span><IconMousePointerClick /> {s('clicks')}</span><strong>{stats.totals.click.toLocaleString()}</strong><small class:up={delta(stats.totals.click, stats.previous.click) >= 0} class:down={delta(stats.totals.click, stats.previous.click) < 0}>{delta(stats.totals.click, stats.previous.click)}% {s('vsPrevious')}</small></div>
+				<div class="stat"><span><IconGift /> {s('rewarded')}</span><strong>{stats.totals.reward.toLocaleString()}</strong><small class:up={delta(stats.totals.reward, stats.previous.reward) >= 0} class:down={delta(stats.totals.reward, stats.previous.reward) < 0}>{delta(stats.totals.reward, stats.previous.reward)}% {s('vsPrevious')}</small></div>
+				<div class="stat"><span><IconChart /> {s('avgCtr')}</span><strong>{stats.ctr}% CTR</strong><small class:up={stats.ctr >= stats.previousCtr} class:down={stats.ctr < stats.previousCtr}>{Math.round(stats.ctr - stats.previousCtr)}% {s('vsPrevious')}</small></div>
 			</div>
-			<h2>{s('last30')}</h2>
-			<div class="chart">
-				{#each stats.days as day (day.day)}
-					<div class="bar" title={`${day.day}: ${day.view} ${s('views')}`}>
-						<div style={`height: ${Math.max(2, (day.view / maxViews) * 100)}%`}></div>
-					</div>
-				{/each}
-			</div>
-			<h2>{s('perAdvert')}</h2>
-			<ul class="ad-list">
-				{#each stats.ads as ad (ad.id)}
-					<li>
-						<strong>{ad.title ?? ad.id}</strong>
-						<span>{ad.view.toLocaleString()} {s('views')} · {ad.click.toLocaleString()} {s('clicks')} · {ad.reward.toLocaleString()} {s('rewarded')}</span>
-					</li>
-				{/each}
-			</ul>
+
+			<section class="stats-panel">
+				<h2>{s('trend')}</h2>
+				<div class="series-toggles">
+					<button class:active={visible.view} onclick={() => (visible.view = !visible.view)}>{s('viewsSeries')}</button>
+					<button class:active={visible.click} onclick={() => (visible.click = !visible.click)}>{s('clicksSeries')}</button>
+					<button class:active={visible.reward} onclick={() => (visible.reward = !visible.reward)}>{s('rewardSeries')}</button>
+				</div>
+				<svg class="line-chart" viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label={s('trend')}>
+					{#if visible.view}<polyline points={lines.view} fill="none" stroke="var(--green)" stroke-width="1.5" vector-effect="non-scaling-stroke" />{/if}
+					{#if visible.click}<polyline points={lines.click} fill="none" stroke="var(--red)" stroke-width="1.5" vector-effect="non-scaling-stroke" />{/if}
+					{#if visible.reward}<polyline points={lines.reward} fill="none" stroke="#e8c547" stroke-width="1.5" vector-effect="non-scaling-stroke" />{/if}
+				</svg>
+				<div class="axis"><span>{stats.series[0]?.day}</span><span>{stats.series[stats.series.length - 1]?.day}</span></div>
+			</section>
+
+			<section class="stats-panel">
+				<h2>{s('funnel')}</h2>
+				<div class="funnel">
+					<div><span>{s('views')}</span><strong>{stats.totals.view.toLocaleString()}</strong><div class="funnel-bar" style={`width:${Math.max(2, (stats.totals.view / Math.max(1, stats.totals.view)) * 100)}%`}></div></div>
+					<div><span>{s('clicks')} · {stats.ctr}% CTR</span><strong>{stats.totals.click.toLocaleString()}</strong><div class="funnel-bar" style={`width:${Math.max(2, (stats.totals.click / Math.max(1, stats.totals.view)) * 100)}%`}></div></div>
+					<div><span>{s('rewardSeries')}</span><strong>{stats.totals.reward.toLocaleString()}</strong><div class="funnel-bar" style={`width:${Math.max(2, (stats.totals.reward / Math.max(1, stats.totals.view)) * 100)}%`}></div></div>
+				</div>
+			</section>
+
+			<section class="stats-panel">
+				<h2>{s('topCampaigns')}</h2>
+				{#if stats.ads.length}
+					<div class="table-wrap"><table>
+						<thead><tr><th>{s('campaigns')}</th><th>{s('views')}</th><th>{s('clicks')}</th><th>{s('ctr')}</th></tr></thead>
+						<tbody>{#each stats.ads as ad (ad.id)}<tr><td>{ad.title}</td><td>{ad.views.toLocaleString()}</td><td>{ad.clicks.toLocaleString()}</td><td>{ad.ctr}%</td></tr>{/each}</tbody>
+					</table></div>
+				{:else}<p class="empty">{s('noData')}</p>{/if}
+			</section>
+
+			<section class="stats-panel">
+				<h2>{s('placementsBreakdown')}</h2>
+				{#if stats.placements.length}
+					<div class="table-wrap"><table>
+						<thead><tr><th>{s('tabsPlacements')}</th><th>{s('views')}</th><th>{s('clicks')}</th><th>{s('ctr')}</th></tr></thead>
+						<tbody>{#each stats.placements as place (place.id)}<tr><td>{place.name}</td><td>{place.views.toLocaleString()}</td><td>{place.clicks.toLocaleString()}</td><td>{place.ctr}%</td></tr>{/each}</tbody>
+					</table></div>
+				{:else}<p class="empty">{s('noData')}</p>{/if}
+			</section>
+
+			<section class="stats-panel">
+				<h2>{s('daily')}</h2>
+				<div class="table-wrap"><table>
+					<thead><tr><th>{s('start')}</th><th>{s('views')}</th><th>{s('clicks')}</th><th>{s('rewardSeries')}</th></tr></thead>
+					<tbody>{#each [...stats.series].reverse().slice(0, 14) as day (day.day)}<tr><td>{day.day}</td><td>{day.view}</td><td>{day.click}</td><td>{day.reward}</td></tr>{/each}</tbody>
+				</table></div>
+			</section>
 		{:else}
 			<p class="empty">{s('noStats')}</p>
 		{/if}

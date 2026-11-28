@@ -19,7 +19,7 @@ from aiohttp import web
 
 from litfass_server.feed import CATEGORIES, PLACEMENTS, VARIANTS
 from litfass_server.pricing import ACTIVATION_STARS
-from litfass_server.stats import network_report, publisher_report, since
+from litfass_server.stats import deep_report, network_report, publisher_report, since
 from litfass_server.store import PUBLISHER_FIELDS, Store
 from litfass_server.video import POST as VIDEO_POST
 
@@ -193,14 +193,13 @@ async def handle(store: Store, admins: set[int], token: str, request: web.Reques
     if action == "publishers":
         return web.json_response({"ok": True, "publishers": store.publishers(None if admin else uid)})
     if action == "stats":
-        if admin:
-            report = network_report(store)
-        else:
-            report = {"placements": [publisher_report(store, p) for p in store.publishers(uid)]}
+        days = data.get("days", 30)
+        if days not in (7, 30, 90):
+            days = 30
         return web.json_response(
             {
                 "ok": True,
-                "stats": report,
+                "stats": deep_report(store, days, None if admin else uid),
                 "campaigns": campaign_report(store, None if admin else uid),
             }
         )
