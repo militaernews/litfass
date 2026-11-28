@@ -7,7 +7,12 @@
 
 	let { children } = $props();
 
-	onMount(startPrefs);
+	onMount(() => {
+		startPrefs();
+		if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+			navigator.serviceWorker.register('/sw.js').catch(() => {});
+		}
+	});
 
 	$effect(() => {
 		document.documentElement.lang = localeState.value;
