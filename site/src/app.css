@@ -506,6 +506,38 @@ input[type='color'] {
 	filter: brightness(1.12);
 }
 
+/* Video demo -------------------------------------------------------------- */
+.video-demo > p {
+	max-width: 40rem;
+	color: var(--muted);
+}
+.video-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+}
+.video-actions button {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 0.7rem 1.1rem;
+	border: 1px solid var(--line);
+	border-radius: 999px;
+	background: var(--card);
+	color: var(--ink);
+	font: inherit;
+	font-weight: 700;
+	cursor: pointer;
+}
+.video-actions button svg {
+	width: 16px;
+	height: 16px;
+}
+.form-grid small {
+	color: var(--muted);
+	font-weight: 500;
+}
+
 /* Guide ------------------------------------------------------------------- */
 .guide-head {
 	padding: 8px 0 26px;

@@ -1,5 +1,13 @@
 import { describe, expect, test } from 'bun:test';
-import { activeAds, frequencyCap, localize, parseFeed, pickAd, type CapStorage } from './index';
+import { activeAds, frequencyCap, localize, parseAd, parseFeed, pickAd, type CapStorage } from './index';
+
+test('video ads keep their playable media', () => {
+	const ad = parseAd({ id: 'v', url: 'https://x.example', video: 'https://t.me/channel/1', videoKind: 'gif', text: { en: text } });
+	expect(ad?.video).toBe('https://t.me/channel/1');
+	expect(ad?.videoKind).toBe('gif');
+	expect(parseAd({ id: 'v', url: 'https://x.example', video: 'http://x', text: { en: text } })).toBeNull();
+	expect(parseAd({ id: 'v', url: 'https://x.example', videoKind: 'bad', text: { en: text } })).toBeNull();
+});
 
 const text = { title: 'T', body: 'B', cta: 'Go' };
 const feed = parseFeed({

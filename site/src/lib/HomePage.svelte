@@ -17,7 +17,9 @@
 	import IconTelegram from '~icons/logos/telegram';
 	import IconCode from '~icons/lucide/code-xml';
 	import IconTerminal from '~icons/lucide/terminal';
-	import { injectAdStyles, renderAd, type Ad, type AdStyle } from '@militaernews/litfass';
+	import IconPlay from '~icons/lucide/play';
+	import IconMaximize from '~icons/lucide/maximize';
+	import { injectAdStyles, renderAd, showInterstitial, type Ad, type AdStyle } from '@militaernews/litfass';
 	import { m } from './paraglide/messages.js';
 	import { localeState } from './locale.svelte';
 	import { highlight } from './highlight';
@@ -66,6 +68,22 @@ if ad and CAP.record(chat_id):
 	];
 
 	let demo: HTMLDivElement | undefined = $state();
+	const demoPost = 'https://t.me/blog_itisinteresting/6536';
+
+	async function play(mode: 'modal' | 'fullscreen') {
+		const response = await fetch(`/litfass/v1/video?url=${encodeURIComponent(demoPost)}`);
+		if (!response.ok) return;
+		const media = (await response.json()) as { url: string; kind: 'video' | 'gif' };
+		showInterstitial(
+			{
+				...ad('poster', { background: '#0c3a6b', color: '#e6f6ff', accent: '#2ec5ff' }),
+				video: media.url,
+				videoKind: media.kind
+			},
+			{ mode, label: 'Anzeige' }
+		);
+	}
+
 
 	onMount(() => {
 		injectAdStyles();
@@ -139,6 +157,15 @@ if ad and CAP.record(chat_id):
 					<div class="code-head"><IconTerminal /> Telegram · Python</div>
 					<pre><code class="hljs">{@html botHtml}</code></pre>
 				</div>
+			</div>
+		</section>
+
+		<section class="video-demo">
+			<h2>{s('videoDemo')}</h2>
+			<p>{s('videoHint')}</p>
+			<div class="video-actions">
+				<button onclick={() => play('modal')}><IconPlay /> {s('modal')}</button>
+				<button onclick={() => play('fullscreen')}><IconMaximize /> {s('fullscreen')}</button>
 			</div>
 		</section>
 

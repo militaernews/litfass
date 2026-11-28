@@ -150,5 +150,11 @@
   "feedHint": "Für eigene Integrationen: /register im Privatchat mit dem Bot – du bekommst eine Feed-URL.",
   "copy": "Kopieren",
   "copied": "Kopiert",
-  "needHelp": "Fragen? @militaernewskontakt"
+  "needHelp": "Fragen? @militaernewskontakt",
+  "videoDemo": "Video-Anzeigen",
+  "modal": "Modal",
+  "fullscreen": "Vollbild",
+  "playVideo": "Interstitial abspielen",
+  "videoHint": "Füge die URL eines Telegram-Kanalposts ein – litfass liest das Medium daraus.",
+  "videoField": "Video (Telegram-Post)"
 }

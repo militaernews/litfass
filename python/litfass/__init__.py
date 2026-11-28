@@ -41,6 +41,8 @@ class Ad:
     end: datetime | None = None
     emoji: str | None = None
     image: str | None = None
+    video: str | None = None
+    video_kind: str | None = None
     categories: tuple[str, ...] = ()
     style: dict[str, str] = field(default_factory=dict)
 
@@ -99,6 +101,8 @@ def _ad(raw: Any) -> Ad | None:
             end=_date(raw.get("end")),
             emoji=raw.get("emoji"),
             image=raw.get("image"),
+            video=raw.get("video") if str(raw.get("video", "")).startswith("https://") else None,
+            video_kind=raw.get("videoKind") if raw.get("videoKind") in ("video", "gif") else None,
             categories=tuple(str(c) for c in raw.get("categories") or ()),
             style={k: v for k, v in (raw.get("style") or {}).items() if isinstance(v, str)},
         )
@@ -163,6 +167,10 @@ async def send_ad(bot, chat_id: int, ad: Ad, lang: str | None = None, label: str
     """Sends the advert as a message (with its image as a photo when it has one)."""
     caption = ad_html(ad, lang, label)
     markup = ad_markup(ad, lang)
+    if ad.video:
+        if ad.video_kind == "video":
+            return await bot.send_video(chat_id, ad.video, caption=caption, parse_mode="HTML", reply_markup=markup, **kwargs)
+        return await bot.send_animation(chat_id, ad.video, caption=caption, parse_mode="HTML", reply_markup=markup, **kwargs)
     if ad.image:
         return await bot.send_photo(chat_id, ad.image, caption=caption, parse_mode="HTML", reply_markup=markup, **kwargs)
     return await bot.send_message(chat_id, caption, parse_mode="HTML", reply_markup=markup, disable_web_page_preview=True, **kwargs)

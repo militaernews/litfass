@@ -150,5 +150,11 @@
   "feedHint": "For custom integrations: send /register in a private chat with the bot to get your feed URL.",
   "copy": "Copy",
   "copied": "Copied",
-  "needHelp": "Need help? @militaernewskontakt"
+  "needHelp": "Need help? @militaernewskontakt",
+  "videoDemo": "Video adverts",
+  "modal": "Modal",
+  "fullscreen": "Fullscreen",
+  "playVideo": "Play interstitial",
+  "videoHint": "Paste a Telegram channel post URL — litfass resolves the media from the post.",
+  "videoField": "Video (Telegram post)"
 }

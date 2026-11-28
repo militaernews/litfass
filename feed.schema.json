@@ -32,6 +32,13 @@
 						"type": "string",
 						"pattern": "^https://"
 					},
+					"video": {
+						"type": "string",
+						"pattern": "^https://"
+					},
+					"videoKind": {
+						"enum": ["video", "gif"]
+					},
 					"placements": {
 						"type": "array",
 						"items": {

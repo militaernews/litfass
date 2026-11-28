@@ -37,6 +37,10 @@ export interface Ad {
 	emoji?: string;
 	/** An image URL; keep it on your own origin to avoid third-party requests */
 	image?: string;
+	/** A playable video or animated GIF URL, resolved from a Telegram channel post */
+	video?: string;
+	/** How to play `video`: a real video element or an animated image */
+	videoKind?: 'video' | 'gif';
 	/** Where the button leads; t.me links open inside Telegram */
 	url: string;
 	/** Texts per language code; `en` is the fallback */
@@ -96,6 +100,8 @@ export function parseAd(value: unknown): Ad | null {
 		return null;
 	}
 	if (ad.image !== undefined && typeof ad.image !== 'string') return null;
+	if (ad.video !== undefined && (typeof ad.video !== 'string' || !/^https:\/\//.test(ad.video))) return null;
+	if (ad.videoKind !== undefined && ad.videoKind !== 'video' && ad.videoKind !== 'gif') return null;
 	if (ad.emoji !== undefined && typeof ad.emoji !== 'string') return null;
 	if (ad.categories !== undefined && (!Array.isArray(ad.categories) || !ad.categories.every((c) => typeof c === 'string'))) {
 		return null;
@@ -330,13 +336,26 @@ export const AD_CSS = `
 .litfass-ad{--litfass-bg:#f4ecd8;--litfass-fg:#1d1d1b;--litfass-accent:#9c2f2f;position:relative;display:flex;gap:.75rem;align-items:center;box-sizing:border-box;padding:.9rem 1rem;border-radius:12px;background:var(--litfass-bg);color:var(--litfass-fg);font:inherit;line-height:1.3;text-align:start;overflow:hidden}
 .litfass-ad__label{position:absolute;top:.35rem;inset-inline-end:.5rem;font-size:.65rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;opacity:.75}
 .litfass-ad__media{flex:none;font-size:2rem;line-height:1}
-.litfass-ad__media img{display:block;width:3.5rem;height:3.5rem;object-fit:cover;border-radius:8px}
+.litfass-ad__media img,.litfass-ad__media video{display:block;width:3.5rem;height:3.5rem;object-fit:cover;border-radius:8px}
 .litfass-ad__body{display:flex;flex-direction:column;gap:.15rem;min-width:0}
 .litfass-ad__title{font-weight:700;font-size:1.05rem}
 .litfass-ad__text{font-size:.9rem;opacity:.9}
 .litfass-ad__cta{align-self:flex-start;margin-top:.35rem;padding:.35rem .8rem;border:0;border-radius:999px;background:var(--litfass-accent);color:var(--litfass-bg);font:inherit;font-weight:700;font-size:.85rem;cursor:pointer}
 .litfass-ad--banner{padding:.5rem .8rem}.litfass-ad--banner .litfass-ad__text{display:none}.litfass-ad--banner .litfass-ad__cta{margin:0 0 0 auto;align-self:center}
-.litfass-ad--poster{flex-direction:column;text-align:center;padding:1.4rem 1rem}.litfass-ad--poster .litfass-ad__media{font-size:3rem}.litfass-ad--poster .litfass-ad__media img{width:100%;height:auto;max-height:12rem}.litfass-ad--poster .litfass-ad__body{align-items:center}.litfass-ad--poster .litfass-ad__title{font-size:1.35rem}.litfass-ad--poster .litfass-ad__cta{align-self:center}
+.litfass-ad--poster{flex-direction:column;text-align:center;padding:1.4rem 1rem}.litfass-ad--poster .litfass-ad__media{font-size:3rem}.litfass-ad--poster .litfass-ad__media img,.litfass-ad--poster .litfass-ad__media video{width:100%;height:auto;max-height:12rem;object-fit:contain}.litfass-ad--poster .litfass-ad__body{align-items:center}.litfass-ad--poster .litfass-ad__title{font-size:1.35rem}.litfass-ad--poster .litfass-ad__cta{align-self:center}
+.litfass-interstitial{position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;padding:16px;background:#000b;color:#fff;font:inherit}
+.litfass-interstitial--fullscreen{padding:0}
+.litfass-interstitial__card{position:relative;width:min(100%,26rem);overflow:hidden;border-radius:20px;background:var(--litfass-bg,#0c2547);color:var(--litfass-fg,#e6f6ff);box-shadow:0 24px 80px #0008;text-align:center}
+.litfass-interstitial--fullscreen .litfass-interstitial__card{width:100%;height:100%;border-radius:0;display:flex;flex-direction:column;justify-content:space-between}
+.litfass-interstitial__label{position:absolute;top:10px;left:12px;z-index:1;border-radius:999px;padding:.15rem .55rem;background:#0008;color:#fff;font-size:.7rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.litfass-interstitial__close{position:absolute;top:8px;right:8px;z-index:1;width:36px;height:36px;border:0;border-radius:50%;background:#0009;color:#fff;font-size:1.3rem;line-height:1;cursor:pointer}
+.litfass-interstitial__media{width:100%;background:#000;display:grid;place-items:center}
+.litfass-interstitial__media img,.litfass-interstitial__media video{display:block;width:100%;max-height:60vh;object-fit:contain}
+.litfass-interstitial--fullscreen .litfass-interstitial__media img,.litfass-interstitial--fullscreen .litfass-interstitial__media video{max-height:74vh}
+.litfass-interstitial__body{padding:18px}
+.litfass-interstitial__title{display:block;font-size:1.15rem;font-weight:800}
+.litfass-interstitial__text{display:block;margin-top:4px;opacity:.85;font-size:.9rem}
+.litfass-interstitial__cta{margin-top:14px;padding:.7rem 1.2rem;border:0;border-radius:999px;background:var(--litfass-accent,#2ec5ff);color:#06142a;font:inherit;font-weight:800;cursor:pointer}
 `;
 
 /** Adds AD_CSS to the document once */
@@ -379,7 +398,25 @@ export function renderAd(
 		return node;
 	};
 	root.append(el('span', 'litfass-ad__label', options.label ?? 'Anzeige'));
-	if (ad.image || ad.emoji) {
+	if (ad.video) {
+		const media = el('div', 'litfass-ad__media');
+		if (ad.videoKind === 'video') {
+			const video = doc.createElement('video');
+			video.src = ad.video;
+			video.autoplay = true;
+			video.muted = true;
+			video.loop = true;
+			video.playsInline = true;
+			media.append(video);
+		} else {
+			const img = doc.createElement('img');
+			img.src = ad.video;
+			img.alt = '';
+			img.loading = 'lazy';
+			media.append(img);
+		}
+		root.append(media);
+	} else if (ad.image || ad.emoji) {
 		const media = el('div', 'litfass-ad__media');
 		if (ad.image) {
 			const img = doc.createElement('img');
@@ -404,4 +441,121 @@ export function renderAd(
 	body.append(cta);
 	root.append(body);
 	return root;
+}
+
+/** Options for a video interstitial */
+export interface InterstitialOptions {
+	/** A centered modal (default) or an edge-to-edge fullscreen overlay */
+	mode?: 'modal' | 'fullscreen';
+	/** Override the "Anzeige" label */
+	label?: string;
+	lang?: string;
+	onClick?: (ad: Ad) => void;
+	onClose?: () => void;
+	/** Automatically close after this many milliseconds */
+	autoCloseMs?: number;
+	doc?: Document;
+}
+
+/** Shows an ad as a modal or fullscreen interstitial, with a close button and CTA. */
+export function showInterstitial(ad: Ad, options: InterstitialOptions = {}): HTMLElement {
+	const doc = options.doc ?? document;
+	const text = localize(ad, options.lang ?? doc.documentElement.lang ?? 'en');
+	const mode = options.mode ?? 'modal';
+	const overlay = doc.createElement('div');
+	overlay.className = `litfass-interstitial litfass-interstitial--${mode}`;
+	overlay.setAttribute('role', 'dialog');
+	overlay.setAttribute('aria-modal', 'true');
+
+	const card = doc.createElement('div');
+	card.className = 'litfass-interstitial__card';
+	for (const [name, value] of Object.entries(adStyleVars(ad.style))) card.style.setProperty(name, value);
+
+	const label = doc.createElement('span');
+	label.className = 'litfass-interstitial__label';
+	label.textContent = options.label ?? 'Anzeige';
+	card.append(label);
+
+	const closeButton = doc.createElement('button');
+	closeButton.className = 'litfass-interstitial__close';
+	closeButton.type = 'button';
+	closeButton.textContent = '×';
+	closeButton.setAttribute('aria-label', 'Close');
+	card.append(closeButton);
+
+	if (ad.video) {
+		const media = doc.createElement('div');
+		media.className = 'litfass-interstitial__media';
+		if (ad.videoKind === 'video') {
+			const video = doc.createElement('video');
+			video.src = ad.video;
+			video.autoplay = true;
+			video.muted = true;
+			video.loop = true;
+			video.playsInline = true;
+			video.setAttribute('playsinline', '');
+			media.append(video);
+		} else {
+			const img = doc.createElement('img');
+			img.src = ad.video;
+			img.alt = '';
+			media.append(img);
+		}
+		card.append(media);
+	} else if (ad.image || ad.emoji) {
+		const media = doc.createElement('div');
+		media.className = 'litfass-interstitial__media';
+		if (ad.image) {
+			const img = doc.createElement('img');
+			img.src = ad.image;
+			img.alt = '';
+			media.append(img);
+		} else {
+			media.textContent = ad.emoji ?? '';
+			media.style.fontSize = '4rem';
+		}
+		card.append(media);
+	}
+
+	const body = doc.createElement('div');
+	body.className = 'litfass-interstitial__body';
+	const title = doc.createElement('strong');
+	title.className = 'litfass-interstitial__title';
+	title.textContent = text.title;
+	const description = doc.createElement('span');
+	description.className = 'litfass-interstitial__text';
+	description.textContent = text.body;
+	const cta = doc.createElement('button');
+	cta.className = 'litfass-interstitial__cta';
+	cta.type = 'button';
+	cta.textContent = text.cta;
+	body.append(title, description, cta);
+	card.append(body);
+	overlay.append(card);
+
+	let timer: ReturnType<typeof setTimeout> | undefined;
+	const close = () => {
+		if (timer) clearTimeout(timer);
+		overlay.remove();
+		options.onClose?.();
+	};
+	closeButton.addEventListener('click', close);
+	overlay.addEventListener('click', (event) => {
+		if (event.target === overlay) close();
+	});
+	cta.addEventListener('click', () => {
+		options.onClick?.(ad);
+		openAdLink(ad.url);
+		close();
+	});
+	doc.addEventListener(
+		'keydown',
+		(event) => {
+			if (event.key === 'Escape') close();
+		},
+		{ once: true }
+	);
+	if (options.autoCloseMs) timer = setTimeout(close, options.autoCloseMs);
+	doc.body.append(overlay);
+	return overlay;
 }

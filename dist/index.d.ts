@@ -33,6 +33,10 @@ export interface Ad {
     emoji?: string;
     /** An image URL; keep it on your own origin to avoid third-party requests */
     image?: string;
+    /** A playable video or animated GIF URL, resolved from a Telegram channel post */
+    video?: string;
+    /** How to play `video`: a real video element or an animated image */
+    videoKind?: 'video' | 'gif';
     /** Where the button leads; t.me links open inside Telegram */
     url: string;
     /** Texts per language code; `en` is the fallback */
@@ -124,7 +128,7 @@ export declare function createReporter(url: string, options?: {
     flush: () => void;
 };
 /** Default look of `renderAd`; themable through the CSS variables or by overriding the classes */
-export declare const AD_CSS = "\n.litfass-ad{--litfass-bg:#f4ecd8;--litfass-fg:#1d1d1b;--litfass-accent:#9c2f2f;position:relative;display:flex;gap:.75rem;align-items:center;box-sizing:border-box;padding:.9rem 1rem;border-radius:12px;background:var(--litfass-bg);color:var(--litfass-fg);font:inherit;line-height:1.3;text-align:start;overflow:hidden}\n.litfass-ad__label{position:absolute;top:.35rem;inset-inline-end:.5rem;font-size:.65rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;opacity:.75}\n.litfass-ad__media{flex:none;font-size:2rem;line-height:1}\n.litfass-ad__media img{display:block;width:3.5rem;height:3.5rem;object-fit:cover;border-radius:8px}\n.litfass-ad__body{display:flex;flex-direction:column;gap:.15rem;min-width:0}\n.litfass-ad__title{font-weight:700;font-size:1.05rem}\n.litfass-ad__text{font-size:.9rem;opacity:.9}\n.litfass-ad__cta{align-self:flex-start;margin-top:.35rem;padding:.35rem .8rem;border:0;border-radius:999px;background:var(--litfass-accent);color:var(--litfass-bg);font:inherit;font-weight:700;font-size:.85rem;cursor:pointer}\n.litfass-ad--banner{padding:.5rem .8rem}.litfass-ad--banner .litfass-ad__text{display:none}.litfass-ad--banner .litfass-ad__cta{margin:0 0 0 auto;align-self:center}\n.litfass-ad--poster{flex-direction:column;text-align:center;padding:1.4rem 1rem}.litfass-ad--poster .litfass-ad__media{font-size:3rem}.litfass-ad--poster .litfass-ad__media img{width:100%;height:auto;max-height:12rem}.litfass-ad--poster .litfass-ad__body{align-items:center}.litfass-ad--poster .litfass-ad__title{font-size:1.35rem}.litfass-ad--poster .litfass-ad__cta{align-self:center}\n";
+export declare const AD_CSS = "\n.litfass-ad{--litfass-bg:#f4ecd8;--litfass-fg:#1d1d1b;--litfass-accent:#9c2f2f;position:relative;display:flex;gap:.75rem;align-items:center;box-sizing:border-box;padding:.9rem 1rem;border-radius:12px;background:var(--litfass-bg);color:var(--litfass-fg);font:inherit;line-height:1.3;text-align:start;overflow:hidden}\n.litfass-ad__label{position:absolute;top:.35rem;inset-inline-end:.5rem;font-size:.65rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;opacity:.75}\n.litfass-ad__media{flex:none;font-size:2rem;line-height:1}\n.litfass-ad__media img,.litfass-ad__media video{display:block;width:3.5rem;height:3.5rem;object-fit:cover;border-radius:8px}\n.litfass-ad__body{display:flex;flex-direction:column;gap:.15rem;min-width:0}\n.litfass-ad__title{font-weight:700;font-size:1.05rem}\n.litfass-ad__text{font-size:.9rem;opacity:.9}\n.litfass-ad__cta{align-self:flex-start;margin-top:.35rem;padding:.35rem .8rem;border:0;border-radius:999px;background:var(--litfass-accent);color:var(--litfass-bg);font:inherit;font-weight:700;font-size:.85rem;cursor:pointer}\n.litfass-ad--banner{padding:.5rem .8rem}.litfass-ad--banner .litfass-ad__text{display:none}.litfass-ad--banner .litfass-ad__cta{margin:0 0 0 auto;align-self:center}\n.litfass-ad--poster{flex-direction:column;text-align:center;padding:1.4rem 1rem}.litfass-ad--poster .litfass-ad__media{font-size:3rem}.litfass-ad--poster .litfass-ad__media img,.litfass-ad--poster .litfass-ad__media video{width:100%;height:auto;max-height:12rem;object-fit:contain}.litfass-ad--poster .litfass-ad__body{align-items:center}.litfass-ad--poster .litfass-ad__title{font-size:1.35rem}.litfass-ad--poster .litfass-ad__cta{align-self:center}\n.litfass-interstitial{position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;padding:16px;background:#000b;color:#fff;font:inherit}\n.litfass-interstitial--fullscreen{padding:0}\n.litfass-interstitial__card{position:relative;width:min(100%,26rem);overflow:hidden;border-radius:20px;background:var(--litfass-bg,#0c2547);color:var(--litfass-fg,#e6f6ff);box-shadow:0 24px 80px #0008;text-align:center}\n.litfass-interstitial--fullscreen .litfass-interstitial__card{width:100%;height:100%;border-radius:0;display:flex;flex-direction:column;justify-content:space-between}\n.litfass-interstitial__label{position:absolute;top:10px;left:12px;z-index:1;border-radius:999px;padding:.15rem .55rem;background:#0008;color:#fff;font-size:.7rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}\n.litfass-interstitial__close{position:absolute;top:8px;right:8px;z-index:1;width:36px;height:36px;border:0;border-radius:50%;background:#0009;color:#fff;font-size:1.3rem;line-height:1;cursor:pointer}\n.litfass-interstitial__media{width:100%;background:#000;display:grid;place-items:center}\n.litfass-interstitial__media img,.litfass-interstitial__media video{display:block;width:100%;max-height:60vh;object-fit:contain}\n.litfass-interstitial--fullscreen .litfass-interstitial__media img,.litfass-interstitial--fullscreen .litfass-interstitial__media video{max-height:74vh}\n.litfass-interstitial__body{padding:18px}\n.litfass-interstitial__title{display:block;font-size:1.15rem;font-weight:800}\n.litfass-interstitial__text{display:block;margin-top:4px;opacity:.85;font-size:.9rem}\n.litfass-interstitial__cta{margin-top:14px;padding:.7rem 1.2rem;border:0;border-radius:999px;background:var(--litfass-accent,#2ec5ff);color:#06142a;font:inherit;font-weight:800;cursor:pointer}\n";
 /** Adds AD_CSS to the document once */
 export declare function injectAdStyles(doc?: Document): void;
 /** The CSS variables for an advert's own colours, for renderers that build their own markup */
@@ -140,3 +144,18 @@ export declare function renderAd(ad: Ad, options?: {
     onClick?: (ad: Ad) => void;
     doc?: Document;
 }): HTMLElement;
+/** Options for a video interstitial */
+export interface InterstitialOptions {
+    /** A centered modal (default) or an edge-to-edge fullscreen overlay */
+    mode?: 'modal' | 'fullscreen';
+    /** Override the "Anzeige" label */
+    label?: string;
+    lang?: string;
+    onClick?: (ad: Ad) => void;
+    onClose?: () => void;
+    /** Automatically close after this many milliseconds */
+    autoCloseMs?: number;
+    doc?: Document;
+}
+/** Shows an ad as a modal or fullscreen interstitial, with a close button and CTA. */
+export declare function showInterstitial(ad: Ad, options?: InterstitialOptions): HTMLElement;

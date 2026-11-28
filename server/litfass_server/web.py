@@ -14,6 +14,7 @@ from telegram import Bot
 from litfass_server.api import handle as handle_ui
 from litfass_server.feed import build_feed
 from litfass_server.pricing import CLICK_STARS
+from litfass_server.video import serve as serve_video
 import hmac
 
 from litfass_server.stats import network_report, publisher_report
@@ -133,6 +134,7 @@ def make_app(
         app.router.add_get(f"{prefix}/v1/media/{{ad_id}}", media)
         app.router.add_post(f"{prefix}/v1/event/{{key}}", event)
         app.router.add_get(f"{prefix}/v1/stats/{{key}}", stats)
+        app.router.add_get(f"{prefix}/v1/video", serve_video)
         app.router.add_get(f"{prefix}/v1/admin/stats", network)
         app.router.add_post(f"{prefix}/v1/admin/ui", ui)
         app.router.add_route("OPTIONS", f"{prefix}/v1/{{tail:.*}}", options)

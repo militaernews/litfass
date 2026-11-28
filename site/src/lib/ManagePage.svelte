@@ -66,6 +66,7 @@
 		end: string;
 		paused: boolean;
 		paid: boolean;
+		video: string;
 		placements: string[];
 		categories: string[];
 		variant: 'card' | 'banner' | 'poster';
@@ -86,6 +87,7 @@
 		end: '',
 		paused: true,
 		paid: false,
+		video: '',
 		placements: [],
 		categories: [],
 		variant: 'card',
@@ -176,6 +178,7 @@
 			end: ad.end ?? '',
 			paused: Boolean(ad.paused),
 			paid: Boolean(ad.paid),
+			video: ad.video ?? '',
 			placements: [...(ad.placements ?? [])],
 			categories: [...(ad.categories ?? [])],
 			variant: ad.style?.variant ?? 'card',
@@ -202,6 +205,7 @@
 				end: draft.end || null,
 				paused: draft.paused,
 				paid: draft.paid,
+				video: draft.video || null,
 				placements: draft.placements,
 				categories: draft.categories,
 				style: { variant: draft.variant, background: draft.background, color: draft.color, accent: draft.accent },
@@ -401,6 +405,7 @@
 			</header>
 			<div class="form-grid">
 				<label class="wide">{s('link')}<input type="url" bind:value={draft.url} /></label>
+				<label class="wide">{s('videoField')}<input type="url" bind:value={draft.video} placeholder="https://t.me/channel/123" /><small>{s('videoHint')}</small></label>
 				<label>{s('emoji')}<input bind:value={draft.emoji} maxlength="8" /></label>
 				<label>{s('weightLabel')}<input type="number" min="0" max="1000" bind:value={draft.weight} /></label>
 				<label>{s('start')}<input type="date" bind:value={draft.start} /></label>

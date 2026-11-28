@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS ads (
     emoji TEXT,
     image_file_id TEXT,
     image_rev INTEGER NOT NULL DEFAULT 0,
+    video TEXT,
     weight INTEGER NOT NULL DEFAULT 1,
     start TEXT,
     "end" TEXT,
@@ -77,7 +78,7 @@ CREATE TABLE IF NOT EXISTS payments (
 
 EVENTS = ("view", "click", "reward")
 JSON_FIELDS = ("placements", "categories", "style")
-AD_FIELDS = ("url", "emoji", "image_file_id", "image_rev", "weight", "start", "end", "paused", "paid", *JSON_FIELDS)
+AD_FIELDS = ("url", "emoji", "image_file_id", "image_rev", "video", "weight", "start", "end", "paused", "paid", *JSON_FIELDS)
 PUBLISHER_FIELDS = ("name", "kind", "categories", "blocked", "allow_free")
 
 
@@ -110,6 +111,7 @@ class Store:
         # Older databases gain the paid / opt-in columns without losing data
         for table, column, definition in (
             ("ads", "paid", "INTEGER NOT NULL DEFAULT 0"),
+            ("ads", "video", "TEXT"),
             ("publishers", "allow_free", "INTEGER NOT NULL DEFAULT 1"),
         ):
             columns = {row["name"] for row in self.db.execute(f"PRAGMA table_info({table})")}

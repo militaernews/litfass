@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import date, datetime, timezone
 
 from litfass_server.store import Store
+from litfass_server.video import resolve
 
 CATEGORIES: dict[str, str] = {
     "news": "📰 News",
@@ -64,6 +65,11 @@ def public_ad(ad: dict, public_url: str) -> dict:
             item[field] = ad[field]
     if ad["image_file_id"]:
         item["image"] = f"{public_url}/v1/media/{ad['id']}?v={ad['image_rev']}"
+    if ad.get("video"):
+        media = resolve(ad["video"])
+        if media:
+            item["video"] = media[0]
+            item["videoKind"] = media[1]
     if ad["placements"]:
         item["placements"] = ad["placements"]
     if ad["categories"]:
