@@ -25,6 +25,7 @@ from telegram.ext import (
     filters,
 )
 
+from litfass_server.api import campaign_report
 from litfass_server.feed import CATEGORIES, KINDS, PLACEMENTS, STYLE_PRESETS, VARIANTS
 from litfass_server.pricing import STAR_PACKAGE
 from litfass_server.stats import overview
@@ -93,6 +94,7 @@ def ad_card(ad: dict, lang: str = "en") -> tuple[str, Markup]:
         f"📍 {', '.join(ad['placements']) or t(lang, 'all_placements')}",
         f"🎨 {escape(style_line)}",
         f"📅 {schedule}",
+        f"{'💎' if ad['paid'] else '🆓'} {t(lang, 'b_paid' if ad['paid'] else 'b_free')}",
     ]
     a = f"ad:{ad['id']}"
     markup = Markup(
@@ -116,17 +118,19 @@ def ad_card(ad: dict, lang: str = "en") -> tuple[str, Markup]:
                 Button(t(lang, "b_schedule"), callback_data=f"{a}:sched"),
                 Button(t(lang, "b_image"), callback_data=f"{a}:image"),
             ],
-            [Button(t(lang, "b_stats"), callback_data=f"{a}:stats"), Button(t(lang, "b_all_ads"), callback_data="ads")],
+            [Button(t(lang, "b_stats"), callback_data=f"{a}:stats"), Button(t(lang, "b_all_ads"), callback_data="ads"), Button(t(lang, "b_main_menu"), callback_data="menu")],
         ]
     )
     return "\n".join(lines), markup
 
 
-def ads_list(store: Store, lang: str = "en") -> tuple[str, Markup]:
+def ads_list(store: Store, lang: str = "en", owner_id: int | None = None) -> tuple[str, Markup]:
     ads = store.list_ads()
+    if owner_id is not None:
+        ads = [ad for ad in ads if ad.get("created_by") == owner_id]
     rows = [[Button(("⏸ " if ad["paused"] else "🟢 ") + ad_title(ad)[:40], callback_data=f"ad:{ad['id']}:show")] for ad in ads]
-    rows.append([Button(t(lang, "b_new_ad"), callback_data="newad"), Button(t(lang, "b_stats"), callback_data="stats")])
-    return (t(lang, "n_ads", n=len(ads)) if ads else t(lang, "no_ads")), Markup(rows)
+    rows.append([Button(t(lang, "b_new_ad"), callback_data="newad"), Button(t(lang, "b_stats"), callback_data="stats"), Button(t(lang, "b_main_menu"), callback_data="menu")])
+    return (t(lang, "campaigns_title") if owner_id is not None else t(lang, "n_ads", n=len(ads))) if ads else t(lang, "campaigns_empty" if owner_id is not None else "no_ads"), Markup(rows)
 
 
 def style_keyboard(ad: dict, lang: str = "en") -> Markup:
@@ -159,6 +163,8 @@ def publisher_card(c: Ctx, publisher: dict, admin: bool, lang: str = "en") -> tu
         f"<b>{escape(publisher['name'])}</b> · {kinds.get(publisher['kind'], publisher['kind'])}",
         t(lang, "content", cats=cats),
         t(lang, "blocked") if publisher["blocked"] else "",
+        t(lang, "earnings_line", n=c.store.earnings(publisher["id"])),
+        t(lang, "b_free_on") if publisher["allow_free"] else t(lang, "b_free_off"),
         "",
         t(lang, "feed_url"),
         f"<code>{escape(feed_url(c, publisher))}</code>",
@@ -169,7 +175,8 @@ def publisher_card(c: Ctx, publisher: dict, admin: bool, lang: str = "en") -> tu
     rows = [
         [Button(t(lang, "b_content"), callback_data=f"{p}:cats"), Button(t(lang, "b_rename"), callback_data=f"{p}:rename")],
         [Button(t(lang, "b_new_key"), callback_data=f"{p}:key"), Button(t(lang, "b_delete"), callback_data=f"{p}:del")],
-        [Button(t(lang, "b_stats"), callback_data=f"{p}:stats")],
+        [Button(t(lang, "b_stats"), callback_data=f"{p}:stats"), Button(t(lang, "b_allow_free"), callback_data=f"{p}:free")],
+        [Button(t(lang, "b_main_menu"), callback_data="menu")],
     ]
     if admin:
         rows.append([Button(t(lang, "b_unblock") if publisher["blocked"] else t(lang, "b_block"), callback_data=f"{p}:block")])
@@ -178,6 +185,44 @@ def publisher_card(c: Ctx, publisher: dict, admin: bool, lang: str = "en") -> tu
 
 def may_edit(context: ContextTypes.DEFAULT_TYPE, user_id: int, publisher: dict | None) -> bool:
     return bool(publisher) and (publisher["owner_id"] == user_id or is_admin(context, user_id))
+
+
+# Navigation ----------------------------------------------------------------------------------------
+
+
+def menu_markup(c: Ctx, user_id: int, lang: str) -> Markup:
+    rows = [
+        [
+            Button(t(lang, "b_my_placements"), callback_data="menu:mine"),
+            Button(t(lang, "b_my_campaigns"), callback_data="menu:campaigns"),
+        ],
+        [Button(t(lang, "b_stats"), callback_data="menu:stats"), Button(t(lang, "b_buy_stars"), callback_data="menu:stars")],
+        [
+            Button(t(lang, "b_manage_app"), url=f"{c.public_url}/manage"),
+            Button(t(lang, "b_support"), url="https://t.me/MilitaernewsKontakt"),
+        ],
+    ]
+    if user_id in c.admins:
+        rows.append(
+            [
+                Button(t(lang, "b_all_ads"), callback_data="ads"),
+                Button(t(lang, "b_placements"), callback_data="menu:publishers"),
+                Button(t(lang, "b_new_ad"), callback_data="newad"),
+            ]
+        )
+    return Markup(rows)
+
+
+async def send_stars_invoice(target, lang: str) -> None:
+    await target.reply_invoice(
+        title="litfass Stars",
+        description=("Stars to publish and click paid adverts." if lang == "en" else "Stars für bezahlte Anzeigen und Klicks."),
+        payload="stars:package",
+        provider_token="",
+        currency="XTR",
+        prices=[LabeledPrice("Stars", STAR_PACKAGE)],
+        start_parameter="stars",
+    )
 
 
 # Commands -----------------------------------------------------------------------------------------
@@ -189,10 +234,19 @@ def lang(update: Update) -> str:
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     lg = lang(update)
-    text = t(lg, "start")
-    if is_admin(context, update.effective_user.id):
-        text += "\n\n" + t(lg, "start_admin")
-    await update.effective_message.reply_text(text, parse_mode=ParseMode.HTML)
+    c = ctx(context)
+    balance = c.store.stars(update.effective_user.id)
+    text = (
+        t(lg, "menu_title")
+        + "\n"
+        + t(lg, "stars_line", n=balance)
+        + ("\n\n" + t(lg, "start_admin") if is_admin(context, update.effective_user.id) else "")
+    )
+    await update.effective_message.reply_text(text, parse_mode=ParseMode.HTML, reply_markup=menu_markup(c, update.effective_user.id, lg))
+
+
+async def menu_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    await start(update, context)
 
 
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -202,15 +256,18 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 
 async def ads_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    if not is_admin(context, update.effective_user.id):
-        return
-    text, markup = ads_list(ctx(context).store, lang(update))
+    c = ctx(context)
+    user_id = update.effective_user.id
+    admin = is_admin(context, user_id)
+    text, markup = ads_list(c.store, lang(update), None if admin else user_id)
     await update.effective_message.reply_text(text, parse_mode=ParseMode.HTML, reply_markup=markup)
 
 
+async def campaigns_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    await ads_command(update, context)
+
+
 async def newad_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    if not is_admin(context, update.effective_user.id):
-        return
     context.user_data["awaiting"] = ("new_url", None)
     await update.effective_message.reply_text(t(lang(update), "ask_new_url"))
 
@@ -236,15 +293,25 @@ async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     c = ctx(context)
     user_id = update.effective_user.id
     lg = lang(update)
-    if is_admin(context, user_id):
-        text = overview(c.store, t(lg, "all_adverts"), ad_names(c.store), by="ad_id", lang=lg)
+    admin = is_admin(context, user_id)
+    campaigns = campaign_report(c.store, None if admin else user_id)
+    lines = [t(lg, "campaigns_title")]
+    if campaigns:
+        for campaign in campaigns:
+            lines.append(
+                f"<b>{escape(campaign['title'])}</b> · {campaign['views']} 👁 · {campaign['clicks']} 👆 · {campaign['ctr']}% CTR"
+            )
+    else:
+        lines.append(t(lg, "campaigns_empty"))
+    lines.append(t(lg, "stars_line", n=c.store.stars(user_id)))
+    if admin:
+        lines.append(overview(c.store, t(lg, "all_adverts"), ad_names(c.store), by="ad_id", lang=lg))
     else:
         own = c.store.publishers(user_id)
-        if not own:
-            await update.effective_message.reply_text(t(lg, "register_first"))
-            return
-        text = "\n\n".join(overview(c.store, p["name"], ad_names(c.store), by="ad_id", publisher_id=p["id"], lang=lg) for p in own)
-    await update.effective_message.reply_text(text, parse_mode=ParseMode.HTML)
+        if own:
+            lines.append("\n\n".join(overview(c.store, p["name"], ad_names(c.store), by="ad_id", publisher_id=p["id"], lang=lg) for p in own))
+    markup = Markup([[Button(t(lg, "b_main_menu"), callback_data="menu")]])
+    await update.effective_message.reply_text("\n".join(lines), parse_mode=ParseMode.HTML, reply_markup=markup)
 
 
 async def publishers_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -258,6 +325,7 @@ async def send_publishers(update: Update, context: ContextTypes.DEFAULT_TYPE, pu
         await update.effective_message.reply_text(empty)
         return
     rows = [[Button(("⛔️ " if p["blocked"] else "") + p["name"][:40], callback_data=f"pub:{p['id']}:show")] for p in publishers]
+    rows.append([Button(t(lang(update), "b_main_menu"), callback_data="menu")])
     await update.effective_message.reply_text(t(lang(update), "n_placements", n=len(publishers)), parse_mode=ParseMode.HTML, reply_markup=Markup(rows))
 
 
@@ -299,10 +367,12 @@ async def on_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         await message.reply_text(card, parse_mode=ParseMode.HTML, reply_markup=markup)
         return
 
-    # Everything below edits adverts
-    if not is_admin(context, user_id):
-        context.user_data.pop("awaiting", None)
-        return
+    # Everything below edits adverts; their owner may edit them
+    if kind != "new_url":
+        ad = c.store.get_ad(target)
+        if not ad or (ad.get("created_by") != user_id and not is_admin(context, user_id)):
+            context.user_data.pop("awaiting", None)
+            return
 
     if kind == "new_url":
         if not text.startswith("https://") or " " in text:
@@ -417,6 +487,47 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     parts = data.split(":")
 
+    # Main navigation
+    if parts[0] == "menu":
+        c = ctx(context)
+        if len(parts) > 1 and parts[1] == "publishers":
+            if not is_admin(context, user_id):
+                await query.answer(t(lg, "admin_only"), show_alert=True)
+                return
+            await query.answer()
+            await send_publishers(update, context, c.store.publishers(), t(lg, "nobody"))
+            return
+        if len(parts) > 1 and parts[1] == "stars":
+            await query.answer()
+            await send_stars_invoice(query.message, lg)
+            return
+        await query.answer()
+        balance = c.store.stars(user_id)
+        text = t(lg, "menu_title") + "\n" + t(lg, "stars_line", n=balance)
+        await show(text, menu_markup(c, user_id, lg))
+        return
+    if data in ("campaigns", "newad", "stats", "ads"):
+        await query.answer()
+        c = ctx(context)
+        admin = is_admin(context, user_id)
+        if data == "newad":
+            await ask("new_url", None, t(lg, "ask_new_url"))
+        elif data == "stats":
+            campaigns = campaign_report(c.store, None if admin else user_id)
+            text = t(lg, "campaigns_title") + "\n" + (
+                "\n".join(f"• {escape(camp['title'])}: {camp['views']} 👁 · {camp['clicks']} 👆 · {camp['ctr']}% CTR" for camp in campaigns)
+                if campaigns
+                else t(lg, "campaigns_empty")
+            )
+            await show(text, Markup([[Button(t(lg, "b_main_menu"), callback_data="menu")]]))
+        elif data == "ads" and not admin:
+            await show(*ads_list(c.store, lg, user_id))
+        elif data == "ads":
+            await show(*ads_list(c.store, lg))
+        else:
+            await show(*ads_list(c.store, lg, user_id))
+        return
+
     # Registration of a new placement
     if parts[0] == "reg":
         draft = context.user_data.get("draft")
@@ -462,7 +573,10 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             rows.append([Button(t(lg, "b_done"), callback_data=f"pub:{publisher['id']}:show")])
             await query.edit_message_reply_markup(Markup(rows))
             return
-        if action == "stats":
+        if action == "free":
+            c.store.update_publisher(publisher["id"], allow_free=0 if publisher["allow_free"] else 1)
+            await query.answer()
+        elif action == "stats":
             await query.answer()
             back = Markup([[Button(t(lg, "b_back"), callback_data=f"pub:{publisher['id']}:show")]])
             await show(overview(c.store, publisher["name"], ad_names(c.store), by="ad_id", publisher_id=publisher["id"], lang=lg), back)
@@ -495,30 +609,15 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         await show(text, markup)
         return
 
-    # Everything below is for admins
-    if not is_admin(context, user_id):
-        await query.answer()
-        return
-
-    if data == "ads":
-        await query.answer()
-        await show(*ads_list(c.store, lg))
-        return
-    if data == "stats":
-        await query.answer()
-        await show(overview(c.store, t(lg, "all_adverts"), ad_names(c.store), by="ad_id", lang=lg), Markup([[Button(t(lg, "b_all_ads"), callback_data="ads")]]))
-        return
-    if data == "newad":
-        await query.answer()
-        await ask("new_url", None, t(lg, "ask_new_url"))
-        return
-
     if parts[0] != "ad":
         await query.answer()
         return
     ad = c.store.get_ad(parts[1])
     if not ad:
         await query.answer(t(lg, "e_gone"), show_alert=True)
+        return
+    if not is_admin(context, user_id) and ad.get("created_by") != user_id:
+        await query.answer(t(lg, "not_yours"), show_alert=True)
         return
     action = parts[2]
     arg = parts[3] if len(parts) > 3 else None
@@ -602,16 +701,7 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 async def stars_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Sell a package of Stars that pays for paid advert campaigns."""
-    lg = lang_of(update)
-    await update.effective_message.reply_invoice(
-        title="litfass Stars" if lg == "en" else "litfass Stars",
-        description=("Stars to publish and click paid adverts." if lg == "en" else "Stars für bezahlte Anzeigen und Klicks."),
-        payload="stars:package",
-        provider_token="",
-        currency="XTR",
-        prices=[LabeledPrice("Stars", STAR_PACKAGE)],
-        start_parameter="stars",
-    )
+    await send_stars_invoice(update.effective_message, lang_of(update))
 
 
 async def on_pre_checkout(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -649,9 +739,9 @@ async def on_error(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 
 def register_handlers(app: Application) -> None:
-    app.add_handler(CommandHandler(["start", "help"], start))
+    app.add_handler(CommandHandler(["start", "help", "menu"], start))
     app.add_handler(CommandHandler("cancel", cancel))
-    app.add_handler(CommandHandler("ads", ads_command))
+    app.add_handler(CommandHandler(["campaigns", "ads"], campaigns_command))
     app.add_handler(CommandHandler("newad", newad_command))
     app.add_handler(CommandHandler("register", register_command))
     app.add_handler(CommandHandler("mine", mine_command))

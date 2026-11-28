@@ -25,10 +25,13 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 logger = logging.getLogger("litfass")
 
 COMMANDS = [
+    BotCommand("menu", "Main menu"),
     BotCommand("register", "Show adverts in your site, bot or channel"),
     BotCommand("mine", "Your placements and feed URLs"),
-    BotCommand("stats", "How your adverts are doing"),
+    BotCommand("campaigns", "Your adverts and CTR"),
+    BotCommand("stats", "How your campaigns are doing"),
     BotCommand("stars", "Buy Stars for paid campaigns"),
+    BotCommand("support", "Contact support"),
     BotCommand("cancel", "Stop the current input"),
 ]
 

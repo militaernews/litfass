@@ -8,7 +8,7 @@ from pathlib import Path
 from ptbkit import Strings
 
 STRINGS = Strings(Path(__file__).resolve().parents[1] / "res" / "strings")
-COMMANDS = ("register", "mine", "stats", "cancel")
+COMMANDS = ("menu", "register", "mine", "campaigns", "stats", "stars", "support", "cancel")
 
 
 def lang_of(user: object | None) -> str:
