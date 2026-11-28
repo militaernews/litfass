@@ -83,7 +83,8 @@ if ad and CAP.record(chat_id):
 	<meta property="og:description" content={s('description')} />
 	<meta property="og:image" content="/social.png" />
 	<meta name="twitter:card" content="summary_large_image" />
-	<link rel="icon" href="/logo.png" />
+	<link rel="icon" href="/icon.png" />
+	<link rel="apple-touch-icon" href="/icon.png" />
 </svelte:head>
 
 {#key localeState.value}
