@@ -156,5 +156,13 @@
   "fullscreen": "Fullscreen",
   "playVideo": "Play interstitial",
   "videoHint": "Paste a Telegram channel post URL — litfass resolves the media from the post.",
-  "videoField": "Video (Telegram post)"
+  "videoField": "Video (Telegram post)",
+  "taskField": "Required task (join channel)",
+  "taskHint": "The bot must be a member of that channel so the join can be verified.",
+  "taskDemo": "Try a task ad",
+  "join": "Join",
+  "verify": "I joined — verify",
+  "notJoined": "Not a member yet — join the channel and try again.",
+  "botMissing": "The bot must be a member of that chat to verify.",
+  "taskDone": "Reward counted."
 }

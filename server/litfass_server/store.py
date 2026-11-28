@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS ads (
     image_file_id TEXT,
     image_rev INTEGER NOT NULL DEFAULT 0,
     video TEXT,
+    task_chat TEXT,
     weight INTEGER NOT NULL DEFAULT 1,
     start TEXT,
     "end" TEXT,
@@ -74,11 +75,18 @@ CREATE TABLE IF NOT EXISTS payments (
     stars INTEGER NOT NULL,
     created_at INTEGER NOT NULL
 );
+-- One completed join-task per advert, user and day
+CREATE TABLE IF NOT EXISTS task_rewards (
+    day TEXT NOT NULL,
+    ad_id TEXT NOT NULL,
+    user_id INTEGER NOT NULL,
+    PRIMARY KEY (day, ad_id, user_id)
+);
 """
 
 EVENTS = ("view", "click", "reward")
 JSON_FIELDS = ("placements", "categories", "style")
-AD_FIELDS = ("url", "emoji", "image_file_id", "image_rev", "video", "weight", "start", "end", "paused", "paid", *JSON_FIELDS)
+AD_FIELDS = ("url", "emoji", "image_file_id", "image_rev", "video", "task_chat", "weight", "start", "end", "paused", "paid", *JSON_FIELDS)
 PUBLISHER_FIELDS = ("name", "kind", "categories", "blocked", "allow_free")
 
 
@@ -112,6 +120,7 @@ class Store:
         for table, column, definition in (
             ("ads", "paid", "INTEGER NOT NULL DEFAULT 0"),
             ("ads", "video", "TEXT"),
+            ("ads", "task_chat", "TEXT"),
             ("publishers", "allow_free", "INTEGER NOT NULL DEFAULT 1"),
         ):
             columns = {row["name"] for row in self.db.execute(f"PRAGMA table_info({table})")}
@@ -228,6 +237,27 @@ class Store:
                 "ON CONFLICT (day, ad_id, publisher_id, event) DO UPDATE SET count = count + excluded.count",
                 (day, ad_id, publisher_id, event, amount),
             )
+
+    # Join tasks -----------------------------------------------------------------------------------
+
+    def task_done(self, day: str, ad_id: str, user_id: int) -> bool:
+        return (
+            self.db.execute(
+                "SELECT 1 FROM task_rewards WHERE day = ? AND ad_id = ? AND user_id = ?", (day, ad_id, user_id)
+            ).fetchone()
+            is not None
+        )
+
+    def mark_task(self, day: str, ad_id: str, user_id: int) -> bool:
+        """Records one reward per user and day; False when it was already recorded."""
+        with self.db:
+            try:
+                self.db.execute(
+                    "INSERT INTO task_rewards (day, ad_id, user_id) VALUES (?, ?, ?)", (day, ad_id, user_id)
+                )
+            except sqlite3.IntegrityError:
+                return False
+        return True
 
     # Stars ---------------------------------------------------------------------------------------
 

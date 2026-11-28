@@ -51,6 +51,7 @@
 		paused?: boolean;
 		paid?: boolean;
 		created_by?: number;
+		task?: { type: 'join'; chat: string };
 	}
 	interface Me {
 		user: TelegramUser;
@@ -67,6 +68,7 @@
 		paused: boolean;
 		paid: boolean;
 		video: string;
+		taskChat: string;
 		placements: string[];
 		categories: string[];
 		variant: 'card' | 'banner' | 'poster';
@@ -88,6 +90,7 @@
 		paused: true,
 		paid: false,
 		video: '',
+		taskChat: '',
 		placements: [],
 		categories: [],
 		variant: 'card',
@@ -179,6 +182,7 @@
 			paused: Boolean(ad.paused),
 			paid: Boolean(ad.paid),
 			video: ad.video ?? '',
+			taskChat: ad.task?.chat ?? '',
 			placements: [...(ad.placements ?? [])],
 			categories: [...(ad.categories ?? [])],
 			variant: ad.style?.variant ?? 'card',
@@ -206,6 +210,7 @@
 				paused: draft.paused,
 				paid: draft.paid,
 				video: draft.video || null,
+				taskChat: draft.taskChat || null,
 				placements: draft.placements,
 				categories: draft.categories,
 				style: { variant: draft.variant, background: draft.background, color: draft.color, accent: draft.accent },
@@ -406,6 +411,7 @@
 			<div class="form-grid">
 				<label class="wide">{s('link')}<input type="url" bind:value={draft.url} /></label>
 				<label class="wide">{s('videoField')}<input type="url" bind:value={draft.video} placeholder="https://t.me/channel/123" /><small>{s('videoHint')}</small></label>
+				<label class="wide">{s('taskField')}<input bind:value={draft.taskChat} placeholder="@channel" /><small>{s('taskHint')}</small></label>
 				<label>{s('emoji')}<input bind:value={draft.emoji} maxlength="8" /></label>
 				<label>{s('weightLabel')}<input type="number" min="0" max="1000" bind:value={draft.weight} /></label>
 				<label>{s('start')}<input type="date" bind:value={draft.start} /></label>

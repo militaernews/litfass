@@ -43,6 +43,7 @@ class Ad:
     image: str | None = None
     video: str | None = None
     video_kind: str | None = None
+    task: tuple[str, str] | None = None
     categories: tuple[str, ...] = ()
     style: dict[str, str] = field(default_factory=dict)
 
@@ -103,6 +104,11 @@ def _ad(raw: Any) -> Ad | None:
             image=raw.get("image"),
             video=raw.get("video") if str(raw.get("video", "")).startswith("https://") else None,
             video_kind=raw.get("videoKind") if raw.get("videoKind") in ("video", "gif") else None,
+            task=(raw["task"]["type"], raw["task"]["chat"])
+            if isinstance(raw.get("task"), dict)
+            and raw["task"].get("type") == "join"
+            and isinstance(raw["task"].get("chat"), str)
+            else None,
             categories=tuple(str(c) for c in raw.get("categories") or ()),
             style={k: v for k, v in (raw.get("style") or {}).items() if isinstance(v, str)},
         )

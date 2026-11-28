@@ -7,6 +7,14 @@ test('video ads keep their playable media', () => {
 	expect(ad?.videoKind).toBe('gif');
 	expect(parseAd({ id: 'v', url: 'https://x.example', video: 'http://x', text: { en: text } })).toBeNull();
 	expect(parseAd({ id: 'v', url: 'https://x.example', videoKind: 'bad', text: { en: text } })).toBeNull();
+	const task = parseAd({
+		id: 't',
+		url: 'https://x.example',
+		task: { type: 'join', chat: '@channel' },
+		text: { en: text }
+	});
+	expect(task?.task?.chat).toBe('@channel');
+	expect(parseAd({ id: 't', url: 'https://x.example', task: { type: 'skip', chat: '@x' }, text: { en: text } })).toBeNull();
 });
 
 const text = { title: 'T', body: 'B', cta: 'Go' };

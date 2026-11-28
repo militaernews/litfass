@@ -28,7 +28,7 @@ MAX_AGE = 24 * 3600
 HEX = re.compile(r"^#[0-9a-fA-F]{6}$")
 LANG = re.compile(r"^[a-z]{2}(-[A-Za-z]{2})?$")
 MAX_TEXT = {"title": 60, "body": 200, "cta": 30}
-EDITABLE = ("url", "emoji", "video", "weight", "start", "end", "paused", "paid", "placements", "categories", "style")
+EDITABLE = ("url", "emoji", "video", "taskChat", "weight", "start", "end", "paused", "paid", "placements", "categories", "style")
 
 
 def verify_init_data(raw: str | None, token: str, now: int | None = None) -> dict | None:
@@ -81,6 +81,12 @@ def _parse(data: dict, current: dict | None) -> tuple[dict, dict, str | None]:
             direct = isinstance(value, str) and value.startswith("https://") and value.lower().split("?")[0].endswith((".mp4", ".webm", ".gif"))
             if value is not None and not (isinstance(value, str) and (VIDEO_POST.match(value) or direct)):
                 return {}, {}, "video must be a Telegram post or a direct media link"
+        elif key == "taskChat":
+            if value is not None and (
+                not isinstance(value, str)
+                or not (re.fullmatch(r"@[A-Za-z0-9_]{4,}", value) or re.fullmatch(r"-?\d{6,}", value))
+            ):
+                return {}, {}, "task chat must be @username or a chat id"
         elif key == "weight":
             if isinstance(value, bool) or not isinstance(value, int) or not 0 <= value <= 1000:
                 return {}, {}, "weight must be an integer between 0 and 1000"

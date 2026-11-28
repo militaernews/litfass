@@ -39,6 +39,14 @@
 					"videoKind": {
 						"enum": ["video", "gif"]
 					},
+					"task": {
+						"type": "object",
+						"required": ["type", "chat"],
+						"properties": {
+							"type": { "const": "join" },
+							"chat": { "type": "string" }
+						}
+					},
 					"placements": {
 						"type": "array",
 						"items": {

@@ -114,6 +114,15 @@ async def test_stars_and_free_opt_in() -> None:
     assert store.earnings(publisher["id"]) == CLICK_STARS
 
 
+def test_task_reward_once_per_user_and_day() -> None:
+    store = Store(":memory:")
+    ad = store.create_ad("https://t.me/x")
+    assert store.mark_task("2026-11-28", ad, 7) is True
+    assert store.mark_task("2026-11-28", ad, 7) is False
+    assert store.task_done("2026-11-28", ad, 7) is True
+    assert store.task_done("2026-11-29", ad, 7) is False
+
+
 async def test_campaign_report() -> None:
     store = Store(":memory:")
     store.credit_stars(42, 20, "charge")

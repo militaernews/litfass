@@ -9,9 +9,10 @@ from collections import defaultdict
 from datetime import datetime, timezone
 
 from aiohttp import web
+from telegram.error import TelegramError
 from telegram import Bot
 
-from litfass_server.api import handle as handle_ui
+from litfass_server.api import handle as handle_ui, verify_init_data
 from litfass_server.feed import build_feed
 from litfass_server.pricing import CLICK_STARS
 from litfass_server.video import serve as serve_video
@@ -108,6 +109,36 @@ def make_app(
     async def ui(request: web.Request) -> web.Response:
         return await handle_ui(store, admins or set(), token, request)
 
+    async def verify_task(request: web.Request) -> web.Response:
+        """Checks a join task with getChatMember before counting the reward."""
+        init = verify_init_data(request.headers.get("x-telegram-init-data"), token)
+        if init is None:
+            return web.json_response({"error": "unauthorized"}, status=401, headers=CORS)
+        try:
+            data = await request.json()
+        except (ValueError, UnicodeDecodeError):
+            data = {}
+        if not isinstance(data, dict):
+            return web.json_response({"error": "invalid body"}, status=400, headers=CORS)
+        ad_id = str(data.get("ad", ""))
+        publisher = store.publisher_by_key(str(data.get("key", "")))
+        ad = store.get_ad(ad_id)
+        if not publisher or publisher["blocked"] or not ad or not ad.get("task_chat"):
+            return web.json_response({"error": "unknown task"}, status=404, headers=CORS)
+        if bot is None:
+            return web.json_response({"error": "bot unavailable"}, status=503, headers=CORS)
+        try:
+            member = await bot.get_chat_member(ad["task_chat"], init["user"]["id"])
+        except TelegramError:
+            return web.json_response({"error": "bot_not_in_chat"}, status=409, headers=CORS)
+        if member.status not in ("member", "administrator", "creator"):
+            return web.json_response({"ok": True, "joined": False}, headers=CORS)
+        day = datetime.now(timezone.utc).date().isoformat()
+        counted = store.mark_task(day, ad_id, init["user"]["id"])
+        if counted:
+            store.count(day, ad_id, publisher["id"], "reward")
+        return web.json_response({"ok": True, "joined": True, "counted": counted}, headers=CORS)
+
     async def media(request: web.Request) -> web.Response:
         ad = store.get_ad(request.match_info["ad_id"])
         if not ad or not ad["image_file_id"] or bot is None:
@@ -134,6 +165,7 @@ def make_app(
         app.router.add_get(f"{prefix}/v1/media/{{ad_id}}", media)
         app.router.add_post(f"{prefix}/v1/event/{{key}}", event)
         app.router.add_get(f"{prefix}/v1/stats/{{key}}", stats)
+        app.router.add_post(f"{prefix}/v1/task/verify", verify_task)
         app.router.add_get(f"{prefix}/v1/video", serve_video)
         app.router.add_get(f"{prefix}/v1/admin/stats", network)
         app.router.add_post(f"{prefix}/v1/admin/ui", ui)

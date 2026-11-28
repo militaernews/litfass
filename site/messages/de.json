@@ -156,5 +156,13 @@
   "fullscreen": "Vollbild",
   "playVideo": "Interstitial abspielen",
   "videoHint": "Füge die URL eines Telegram-Kanalposts ein – litfass liest das Medium daraus.",
-  "videoField": "Video (Telegram-Post)"
+  "videoField": "Video (Telegram-Post)",
+  "taskField": "Pflicht-Task (Kanal beitreten)",
+  "taskHint": "Der Bot muss Mitglied dieses Kanals sein, damit der Beitritt geprüft werden kann.",
+  "taskDemo": "Task-Anzeige testen",
+  "join": "Beitreten",
+  "verify": "Ich bin dabei – prüfen",
+  "notJoined": "Noch kein Mitglied – tritt dem Kanal bei und versuche es erneut.",
+  "botMissing": "Der Bot muss Mitglied dieses Chats sein, um zu prüfen.",
+  "taskDone": "Reward gezählt."
 }

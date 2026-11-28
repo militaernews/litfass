@@ -70,6 +70,8 @@ def public_ad(ad: dict, public_url: str) -> dict:
         if media:
             item["video"] = media[0]
             item["videoKind"] = media[1]
+    if ad.get("task_chat"):
+        item["task"] = {"type": "join", "chat": ad["task_chat"]}
     if ad["placements"]:
         item["placements"] = ad["placements"]
     if ad["categories"]:

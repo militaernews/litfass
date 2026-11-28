@@ -59,6 +59,11 @@ export function parseAd(value) {
         return null;
     if (ad.videoKind !== undefined && ad.videoKind !== 'video' && ad.videoKind !== 'gif')
         return null;
+    if (ad.task !== undefined &&
+        (typeof ad.task !== 'object' ||
+            ad.task.type !== 'join' ||
+            typeof ad.task.chat !== 'string'))
+        return null;
     if (ad.emoji !== undefined && typeof ad.emoji !== 'string')
         return null;
     if (ad.categories !== undefined && (!Array.isArray(ad.categories) || !ad.categories.every((c) => typeof c === 'string'))) {
@@ -270,6 +275,12 @@ export const AD_CSS = `
 .litfass-interstitial__title{display:block;font-size:1.15rem;font-weight:800}
 .litfass-interstitial__text{display:block;margin-top:4px;opacity:.85;font-size:.9rem}
 .litfass-interstitial__cta{margin-top:14px;padding:.7rem 1.2rem;border:0;border-radius:999px;background:var(--litfass-accent,#2ec5ff);color:#06142a;font:inherit;font-weight:800;cursor:pointer}
+.litfass-interstitial__actions{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:14px}
+.litfass-interstitial__join,.litfass-interstitial__verify{padding:.7rem 1.2rem;border:0;border-radius:999px;font:inherit;font-weight:800;text-decoration:none;cursor:pointer}
+.litfass-interstitial__join{background:#229ed9;color:#fff}
+.litfass-interstitial__verify{background:var(--litfass-accent,#2ec5ff);color:#06142a}
+.litfass-interstitial__verify:disabled{opacity:.6;cursor:wait}
+.litfass-interstitial__error{display:block;margin-top:10px;color:#ffb4a8;font-size:.8rem}
 `;
 /** Adds AD_CSS to the document once */
 export function injectAdStyles(doc = document) {
@@ -456,6 +467,95 @@ export function showInterstitial(ad, options = {}) {
     }, { once: true });
     if (options.autoCloseMs)
         timer = setTimeout(close, options.autoCloseMs);
+    doc.body.append(overlay);
+    return overlay;
+}
+/**
+ * Shows a join-task ad with no timer, countdown, skip or close button. The only way out is
+ * joining the channel and a successful verification through `onVerify`.
+ */
+export function showTaskInterstitial(ad, options) {
+    const doc = options.doc ?? document;
+    const text = localize(ad, options.lang ?? doc.documentElement.lang ?? 'en');
+    const chat = ad.task?.chat.replace(/^@/, '') ?? '';
+    const overlay = doc.createElement('div');
+    overlay.className = `litfass-interstitial litfass-interstitial--${options.mode ?? 'fullscreen'}`;
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    const card = doc.createElement('div');
+    card.className = 'litfass-interstitial__card';
+    for (const [name, value] of Object.entries(adStyleVars(ad.style)))
+        card.style.setProperty(name, value);
+    const label = doc.createElement('span');
+    label.className = 'litfass-interstitial__label';
+    label.textContent = options.label ?? 'Anzeige';
+    card.append(label);
+    if (ad.video) {
+        const media = doc.createElement('div');
+        media.className = 'litfass-interstitial__media';
+        if (ad.videoKind === 'video') {
+            const video = doc.createElement('video');
+            video.src = ad.video;
+            video.autoplay = true;
+            video.muted = true;
+            video.loop = true;
+            video.playsInline = true;
+            media.append(video);
+        }
+        else {
+            const img = doc.createElement('img');
+            img.src = ad.video;
+            img.alt = '';
+            media.append(img);
+        }
+        card.append(media);
+    }
+    const body = doc.createElement('div');
+    body.className = 'litfass-interstitial__body';
+    const title = doc.createElement('strong');
+    title.className = 'litfass-interstitial__title';
+    title.textContent = text.title;
+    const description = doc.createElement('span');
+    description.className = 'litfass-interstitial__text';
+    description.textContent = text.body;
+    body.append(title, description);
+    const actions = doc.createElement('div');
+    actions.className = 'litfass-interstitial__actions';
+    const join = doc.createElement('a');
+    join.className = 'litfass-interstitial__join';
+    join.href = `https://t.me/${chat}`;
+    join.target = '_blank';
+    join.rel = 'noreferrer';
+    join.textContent = `${options.labels?.join ?? 'Join'} @${chat}`;
+    const verify = doc.createElement('button');
+    verify.className = 'litfass-interstitial__verify';
+    verify.type = 'button';
+    verify.textContent = options.labels?.verify ?? 'I joined — verify';
+    const error = doc.createElement('span');
+    error.className = 'litfass-interstitial__error';
+    actions.append(join, verify);
+    body.append(actions, error);
+    card.append(body);
+    overlay.append(card);
+    verify.addEventListener('click', async () => {
+        verify.disabled = true;
+        error.textContent = '';
+        try {
+            const ok = await options.onVerify();
+            if (ok) {
+                overlay.remove();
+                options.onDone?.();
+            }
+            else {
+                error.textContent = options.labels?.notJoined ?? 'Not a member yet — join the channel and try again.';
+                verify.disabled = false;
+            }
+        }
+        catch {
+            error.textContent = options.labels?.botMissing ?? 'The bot must be a member of that chat to verify.';
+            verify.disabled = false;
+        }
+    });
     doc.body.append(overlay);
     return overlay;
 }
