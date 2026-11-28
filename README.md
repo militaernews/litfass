@@ -150,11 +150,12 @@ python -m litfass_server.profile   # once: name, descriptions and the logo as pr
 
 ## Web app and manager
 
-`site/` is a static SvelteKit app; `vercel.json` at the repository root is the whole deployment
-contract. Vercel installs and builds in `site/`, serves `site/build/`, and forwards `/litfass/*`
-through the single function `api/proxy.ts` to the feed server, which runs next to its database
-outside Vercel. Set `API_ORIGIN` in the Vercel project to the feed server's origin — that address
-is never part of a feed URL or the repository. Set `LITFASS_PUBLIC_URL` on the server to
+`site/` is a static SvelteKit app and the Vercel project's Root Directory. `vercel.json` at the
+repository root is the whole deployment contract: Vercel installs and builds in `site/`, serves
+`site/build/`, and forwards `/litfass/*` through the single function `site/api/proxy.ts` to the
+feed server, which runs next to its database outside Vercel. Set `API_ORIGIN` in the Vercel project
+to the feed server's origin — that address is never part of a feed URL or the repository.
+Set `LITFASS_PUBLIC_URL` on the server to
 `https://<your-site>/litfass` so feeds, events, images and statistics all use the site's address.
 
 Open `/manage` from [@litfass_advertisement_bot](https://t.me/litfass_advertisement_bot) to create,
