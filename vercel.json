@@ -4,6 +4,10 @@
 	"installCommand": "",
 	"outputDirectory": "site",
 	"cleanUrls": true,
+	"proxy": {
+		"entrypoint": "proxy.js",
+		"matcher": "/litfass/:path*"
+	},
 	"headers": [
 		{
 			"source": "/(.*)",

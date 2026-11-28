@@ -148,6 +148,11 @@ python -m litfass_server.profile   # once: name, descriptions and the logo as pr
 
 `LITFASS_DB` (default `data/litfass.db`), `LITFASS_PORT` (default 3792) and `LITFASS_STATS_TOKEN` (unlocks `/v1/admin/stats`) are optional.
 
+The landing page's Vercel deployment proxies `/litfass/*` to the feed server. Set `LITFASS_ORIGIN` in
+the Vercel project to the feed server's origin (scheme, host and port), and set `LITFASS_PUBLIC_URL` on
+the server to `https://<your-site>/litfass`. Feeds, events, images and statistics then all use the
+site's address; the backend host is never published in a feed.
+
 ## Development
 
 ```sh
