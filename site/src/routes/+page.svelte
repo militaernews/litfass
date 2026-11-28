@@ -67,7 +67,6 @@ if ad and CAP.record(chat_id):
 				<a class="button" href="https://t.me/litfass_advertisement_bot">Open the bot</a>
 				<a class="button secondary" href="/manage">Manage adverts</a>
 				<a class="button secondary" href="https://militaernews.vercel.app">Militär News</a>
-				<a class="button secondary" href="https://github.com/militaernews/litfass">GitHub</a>
 			</div>
 		</div>
 	</header>
@@ -113,7 +112,6 @@ if ad and CAP.record(chat_id):
 	</p>
 
 	<footer>
-		MIT licensed · <a href="https://github.com/militaernews/litfass">github.com/militaernews/litfass</a>
-		· Built by <a href="https://militaernews.vercel.app">Militär News</a>
+		MIT licensed · Built by <a href="https://militaernews.vercel.app">Militär News</a>
 	</footer>
 </main>
