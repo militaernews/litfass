@@ -19,7 +19,8 @@
 	import IconTerminal from '~icons/lucide/terminal';
 	import IconPlay from '~icons/lucide/play';
 	import IconMaximize from '~icons/lucide/maximize';
-	import { injectAdStyles, renderAd, showInterstitial, showTaskInterstitial, type Ad, type AdStyle } from '@militaernews/litfass';
+	import { injectAdStyles, showInterstitial, showTaskInterstitial, type Ad, type AdStyle } from '@militaernews/litfass';
+	import AdCard from './AdCard.svelte';
 	import { m } from './paraglide/messages.js';
 	import { localeState } from './locale.svelte';
 	import { highlight } from './highlight';
@@ -67,8 +68,12 @@ if ad and CAP.record(chat_id):
 		{ icon: IconChart, title: 'card4Title', text: 'card4Text' }
 	];
 
-	let demo: HTMLDivElement | undefined = $state();
 	const demoPost = 'https://t.me/blog_itisinteresting/6536';
+	const demoAds = [
+		ad('card', { background: '#0c3a6b', color: '#e6f6ff', accent: '#2ec5ff' }),
+		ad('banner', { background: '#14161a', color: '#f5f5f5', accent: '#e5484d' }, { emoji: '🎮' }),
+		ad('poster', { background: '#ffd60a', color: '#111111', accent: '#d00000' }, { emoji: '🏆' })
+	];
 
 	function taskDemo() {
 		showTaskInterstitial(
@@ -99,14 +104,7 @@ if ad and CAP.record(chat_id):
 	}
 
 
-	onMount(() => {
-		injectAdStyles();
-		demo?.append(
-			renderAd(ad('card', { background: '#0c3a6b', color: '#e6f6ff', accent: '#2ec5ff' }), { lang: localeState.value, label: 'Anzeige' }),
-			renderAd(ad('banner', { background: '#14161a', color: '#f5f5f5', accent: '#e5484d' }, { emoji: '🎮' }), { lang: localeState.value }),
-			renderAd(ad('poster', { background: '#ffd60a', color: '#111111', accent: '#d00000' }, { emoji: '🏆' }), { lang: localeState.value })
-		);
-	});
+	onMount(injectAdStyles);
 </script>
 
 <svelte:head>
@@ -156,7 +154,11 @@ if ad and CAP.record(chat_id):
 			<h2>{s('looksLike')}</h2>
 			<div class="showcase">
 				<div class="showcase-head"><IconBookOpen /> {s('looksLike')}</div>
-				<div class="demo" bind:this={demo}></div>
+				<div class="demo">
+				{#each demoAds as demoAd (demoAd.id)}
+					<AdCard ad={demoAd} lang={localeState.value} />
+				{/each}
+			</div>
 			</div>
 		</section>
 

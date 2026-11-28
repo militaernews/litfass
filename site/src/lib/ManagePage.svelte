@@ -16,7 +16,8 @@
 	import IconSparkles from '~icons/lucide/sparkles';
 	import IconArrowRight from '~icons/lucide/arrow-right';
 	import IconTelegram from '~icons/logos/telegram';
-	import { injectAdStyles, renderAd, type Ad, type AdStyle } from '@militaernews/litfass';
+	import { injectAdStyles, type Ad, type AdStyle } from '@militaernews/litfass';
+	import AdCard from './AdCard.svelte';
 	import { call, setDevInitData } from './api';
 	import { m } from './paraglide/messages.js';
 	import { localeState } from './locale.svelte';
@@ -113,7 +114,6 @@
 	let error = $state('');
 	let notice = $state('');
 	let busy = $state(false);
-	let preview: HTMLDivElement | undefined = $state();
 
 	const asAd = (d: Draft): Ad => ({
 		id: editingId ?? 'preview',
@@ -158,10 +158,7 @@
 		}
 	});
 
-	$effect(() => {
-		if (!preview || !formOpen) return;
-		preview.replaceChildren(renderAd(asAd(draft), { lang: localeState.value, label: 'Anzeige' }));
-	});
+	const draftAd = $derived(asAd(draft));
 
 	function openCreate() {
 		editingId = null;
@@ -445,7 +442,7 @@
 			</div>
 			<div class="preview-wrap">
 				<h3>{s('preview')}</h3>
-				<div class="preview" bind:this={preview}></div>
+				<AdCard ad={draftAd} lang={localeState.value} />
 			</div>
 			{#if error}<p class="alert" role="alert">{error}</p>{/if}
 			<footer>

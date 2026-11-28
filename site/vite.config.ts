@@ -15,6 +15,7 @@ export default defineConfig({
 			strategy: ['localStorage', 'preferredLanguage', 'baseLocale']
 		}),
 		sveltekit({ preprocess: vitePreprocess(), adapter: adapter() }),
+		tailwindcss(),
 		Icons({ compiler: 'svelte' })
 	],
 	server: {
