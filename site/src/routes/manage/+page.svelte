@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
 	import { injectAdStyles, renderAd, type Ad, type AdStyle } from '@militaernews/litfass';
 	import { call, setDevInitData } from '../../lib/api';
 	import { getTelegramUser, isTelegramLaunch, type TelegramUser } from '../../lib/telegram';
@@ -107,6 +108,10 @@
 		try {
 			await reload();
 		} catch (cause) {
+			if (cause instanceof Error && /unauthorized/i.test(cause.message)) {
+				await goto('/login', { replaceState: true });
+				return;
+			}
 			error = cause instanceof Error ? cause.message : 'Could not load the dashboard';
 		}
 	});
