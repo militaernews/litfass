@@ -1,10 +1,19 @@
 import adapter from '@sveltejs/adapter-static';
+import { paraglideVitePlugin } from '@inlang/paraglide-js';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-	plugins: [sveltekit({ preprocess: vitePreprocess(), adapter: adapter() })],
+	plugins: [
+		paraglideVitePlugin({
+			project: './project.inlang',
+			outdir: './src/lib/paraglide',
+			// A manual choice is remembered; otherwise the browser language decides
+			strategy: ['localStorage', 'preferredLanguage', 'baseLocale']
+		}),
+		sveltekit({ preprocess: vitePreprocess(), adapter: adapter() })
+	],
 	server: {
 		host: '0.0.0.0',
 		// The feed server runs next to its database; in dev it is reached through this proxy.

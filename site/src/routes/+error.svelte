@@ -1,21 +1,24 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { m } from '../lib/paraglide/messages.js';
+	import { localeState } from '../lib/locale.svelte';
 
 	const status = $derived(page.status ?? 404);
 	const notFound = $derived(status === 404);
 	const unauthorized = $derived(status === 401);
 	const broken = $derived(status >= 500);
+	const s = (key: string, values?: Record<string, string>) => (m as unknown as Record<string, ((v?: Record<string, string>) => string) | undefined>)[key]?.(values) ?? '';
 	const title = $derived(
-		notFound ? 'This page went missing' : unauthorized ? 'Sign in required' : broken ? 'Something broke' : 'Something went wrong'
+		notFound ? s('error404Title') : unauthorized ? s('error401Title') : broken ? s('error500Title') : s('errorGenericTitle')
 	);
 	const body = $derived(
 		notFound
-			? 'The link may be old, or the page may have moved. The posters are still here.'
+			? s('error404Body')
 			: unauthorized
-				? 'Open the manager from the Telegram bot to sign in.'
+				? s('error401Body')
 				: broken
-					? 'The server had a bad moment. Try again in a little while.'
-					: `The page could not be loaded (${status}).`
+					? s('error500Body')
+					: s('errorGenericBody', { status: String(status) })
 	);
 </script>
 
@@ -23,6 +26,7 @@
 	<title>{status} · litfass</title>
 	<meta name="robots" content="noindex" />
 </svelte:head>
+{#key localeState.value}
 
 <main class="error-shell">
 	<section class="error-card">
@@ -32,12 +36,12 @@
 		<p class="error-body">{body}</p>
 		<div class="error-actions">
 			{#if unauthorized}
-				<a class="button" href="/login">Sign in with Telegram</a>
+				<a class="button" href="/login">{s('signIn')}</a>
 			{:else}
-				<a class="button" href="/">Back to litfass</a>
+				<a class="button" href="/">{s('backHome')}</a>
 			{/if}
-			<a class="button secondary" href="https://militaernews.vercel.app">Militär News</a>
-			{#if !notFound && !unauthorized}<button onclick={() => location.reload()}>Try again</button>{/if}
+			<a class="button secondary" href="https://militaernews.vercel.app">{s('militaerNews')}</a>
+			{#if !notFound && !unauthorized}<button onclick={() => location.reload()}>{s('tryAgain')}</button>{/if}
 		</div>
 	</section>
 </main>
@@ -90,3 +94,4 @@
 		gap: 10px;
 	}
 </style>
+{/key}

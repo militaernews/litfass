@@ -7,3 +7,5 @@ build/
 .env
 server/data/
 site/litfass.js
+
+site/src/lib/paraglide/
