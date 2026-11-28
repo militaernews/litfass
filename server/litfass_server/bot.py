@@ -639,7 +639,9 @@ async def terms_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
 
 
 async def paysupport_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await update.effective_message.reply_text("Payment support: write to the bot owner." if lang_of(update) == "en" else "Zahlungssupport: Schreib dem Bot-Betreiber.")
+    await update.effective_message.reply_text(
+        "Payment support: @militaernewskontakt" if lang_of(update) == "en" else "Zahlungssupport: @militaernewskontakt"
+    )
 
 
 async def on_error(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -657,7 +659,7 @@ def register_handlers(app: Application) -> None:
     app.add_handler(CommandHandler("stats", stats_command))
     app.add_handler(CommandHandler("stars", stars_command))
     app.add_handler(CommandHandler("terms", terms_command))
-    app.add_handler(CommandHandler("paysupport", paysupport_command))
+    app.add_handler(CommandHandler(["paysupport", "support"], paysupport_command))
     app.add_handler(PreCheckoutQueryHandler(on_pre_checkout))
     app.add_handler(MessageHandler(filters.SUCCESSFUL_PAYMENT, on_successful_payment))
     app.add_handler(CallbackQueryHandler(on_button))

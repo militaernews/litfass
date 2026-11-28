@@ -59,6 +59,7 @@
 			</a>
 
 			<p class="privacy"><IconShieldCheck /> {s('privacyNote')}</p>
+			<p class="support"><a href="https://t.me/militaernewskontakt" target="_blank" rel="noreferrer">{s('support')}</a></p>
 			{#if error}<p class="alert" role="alert">{error}</p>{/if}
 
 			{#if import.meta.env.DEV && !isTelegramLaunch(typeof window === 'undefined' ? '' : window.location.hash)}
@@ -110,6 +111,7 @@
 	.secondary :global(svg) { width: 14px; height: 14px; }
 	.privacy { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 24px 0 0; color: var(--muted); font-size: 0.78rem; }
 	.privacy :global(svg) { width: 15px; height: 15px; color: var(--red); }
+	.support { margin: 8px 0 0; font-size: 0.8rem; }
 	.alert { margin: 16px 0 0; padding: 10px 14px; border-radius: 10px; background: #ffe3e0; color: #8a1c13; }
 	.dev-panel { display: grid; gap: 8px; margin-top: 22px; padding-top: 22px; border-top: 1px solid var(--line); text-align: start; }
 	.dev-panel label { display: grid; gap: 5px; font-size: 0.85rem; font-weight: 600; }

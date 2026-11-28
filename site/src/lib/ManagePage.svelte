@@ -253,7 +253,7 @@
 
 <div class="manager">
 	<header class="manager-head">
-		<a class="brand" href={'/'}>litfass</a>
+		<a class="brand" href="/">litfass</a>
 		<div>
 			<h1>{s('managerTitle')}</h1>
 			<p>
@@ -263,6 +263,14 @@
 					{s('openFromBot')}
 				{/if}
 			</p>
+			{#if me}
+				<div class="wallet">
+					<span><IconSparkles /> {me.stars ?? 0} · {s('starsBalance')}</span>
+					<span><IconGift /> {me.earnings ?? 0} · {s('earnings')}</span>
+					<a href="https://t.me/litfass_advertisement_bot?start=stars" target="_blank" rel="noreferrer">{s('buyStars')}</a>
+					<a href="https://t.me/militaernewskontakt" target="_blank" rel="noreferrer">{s('support')}</a>
+				</div>
+			{/if}
 		</div>
 	</header>
 

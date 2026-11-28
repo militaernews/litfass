@@ -23,7 +23,7 @@
   "step3": "Nutze die Feed-URL aus dem Bot mit einem der Pakete unten. <code>/stats</code> zeigt dir die Zahlen.",
   "keepLegal": "Rechtliches",
   "legalText": "Werbung muss erkennbar sein (in Deutschland § 6 DDG und § 5a UWG), deshalb kennzeichnen die Renderer sie standardmäßig als „Anzeige“. Feed und Statistiken enthalten keine personenbezogenen Daten. Lädt man den Feed direkt aus dem Browser, erreicht die IP-Adresse den Feed-Server – gespeichert wird sie nicht. Um das zu vermeiden, Feed und Events vom eigenen Server laden.",
-  "footer": "MIT-Lizenz · Erstellt von",
+  "footer": "militaernewskontakt",
   "managerTitle": "Anzeigen-Verwaltung",
   "signedInAs": "Angemeldet als",
   "openFromBot": "Öffne diese Seite aus @litfass_advertisement_bot",
@@ -132,5 +132,6 @@
   "noCampaigns": "Noch keine Kampagnen.",
   "activationHint": "Aktivierung: 10 Stars",
   "clickHint": "1 Star pro Klick",
-  "freeHint": "Kostenlos – nur für Werbeplätze, die das erlauben."
+  "freeHint": "Kostenlos – nur für Werbeplätze, die das erlauben.",
+  "support": "Support: @militaernewskontakt"
 }

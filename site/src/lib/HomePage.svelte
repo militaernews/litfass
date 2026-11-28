@@ -146,7 +146,7 @@ if ad and CAP.record(chat_id):
 		</section>
 
 		<footer>
-			<span>{s('footer')} <a href="https://militaernews.vercel.app">{s('militaerNews')}</a></span>
+			<a href="https://t.me/militaernewskontakt" target="_blank" rel="noreferrer">{s('footer')}</a>
 		</footer>
 	</main>
 {/key}

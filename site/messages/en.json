@@ -23,7 +23,7 @@
   "step3": "Use the feed URL the bot gives you with one of the packages below. <code>/stats</code> shows how it’s going.",
   "keepLegal": "Keep it legal",
   "legalText": "Adverts have to be recognisable as adverts (in Germany § 6 DDG and § 5a UWG), so the renderers label them „Anzeige“ by default. The feed and the statistics hold no personal data. If you load the feed straight from a visitor’s browser, their IP address reaches the feed server for that request, but it isn’t logged or stored. To keep even that off, fetch the feed on your own server.",
-  "footer": "MIT licensed · Built by",
+  "footer": "militaernewskontakt",
   "managerTitle": "Advert manager",
   "signedInAs": "Signed in as",
   "openFromBot": "Open this page from @litfass_advertisement_bot",
@@ -132,5 +132,6 @@
   "noCampaigns": "No campaigns yet.",
   "activationHint": "Activation: 10 Stars",
   "clickHint": "1 Star per click",
-  "freeHint": "Free — only for placements that allow it."
+  "freeHint": "Free — only for placements that allow it.",
+  "support": "Support: @militaernewskontakt"
 }
