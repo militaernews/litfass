@@ -193,6 +193,11 @@ if ad and CAP.record(chat_id):
 			<a class="support-link" href="https://t.me/MilitaernewsKontakt" target="_blank" rel="noreferrer">
 				<IconTelegram /> {s('footer')} <IconArrowRight />
 			</a>
+			<nav class="site-links">
+				<a href="/guide">{s('guideTitle')}</a>
+				<a href="/settings">{s('settingsLink')}</a>
+				<a href="/about">{s('aboutLink')}</a>
+			</nav>
 		</footer>
 	</main>
 {/key}

@@ -12,8 +12,12 @@ export interface TelegramUser {
 interface TelegramWebApp {
 	initData?: string;
 	initDataUnsafe?: { user?: TelegramUser };
+	colorScheme?: 'light' | 'dark';
+	themeParams?: Record<string, string>;
 	ready?: () => void;
 	expand?: () => void;
+	onEvent?: (event: string, callback: () => void) => void;
+	offEvent?: (event: string, callback: () => void) => void;
 }
 
 type TelegramWindow = Window & { Telegram?: { WebApp?: TelegramWebApp } };
@@ -59,4 +63,21 @@ export async function getInitData(): Promise<string> {
 
 export async function getTelegramUser(): Promise<TelegramUser | null> {
 	return (await loadTelegram())?.initDataUnsafe?.user ?? null;
+}
+
+/** Follows the Telegram client's light/dark scheme and theme colours while the Mini App is open. */
+export function watchTelegramTheme(callback: (scheme: 'light' | 'dark' | undefined, params?: Record<string, string>) => void) {
+	let stopped = false;
+	let unsubscribe: (() => void) | undefined;
+	void loadTelegram().then((app) => {
+		if (!app || stopped) return;
+		const update = () => callback(app.colorScheme, app.themeParams);
+		update();
+		app.onEvent?.('themeChanged', update);
+		unsubscribe = () => app.offEvent?.('themeChanged', update);
+	});
+	return () => {
+		stopped = true;
+		unsubscribe?.();
+	};
 }

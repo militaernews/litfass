@@ -685,6 +685,195 @@ input[type='color'] {
 	height: 20px;
 }
 
+/* Settings & About -------------------------------------------------------- */
+.settings-head,
+.about-head {
+	padding: 8px 0 26px;
+	text-align: center;
+}
+.about-head img {
+	width: 96px;
+	height: 96px;
+	border-radius: 50%;
+	box-shadow: 0 14px 36px #0002;
+}
+.settings section,
+.about section {
+	margin-bottom: 34px;
+}
+.settings section h2,
+.about section h2 {
+	display: flex;
+	align-items: center;
+	gap: 9px;
+}
+.settings section h2 svg,
+.about section h2 svg {
+	width: 20px;
+	height: 20px;
+	color: var(--red);
+}
+.options {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+}
+.options button {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 0.65rem 1.1rem;
+	border: 1px solid var(--line);
+	border-radius: 999px;
+	background: var(--card);
+	color: var(--muted);
+	font: inherit;
+	font-weight: 700;
+	cursor: pointer;
+}
+.options button.active {
+	background: var(--green);
+	border-color: var(--green);
+	color: var(--accent-ink);
+}
+.options button svg {
+	width: 16px;
+	height: 16px;
+}
+.note {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	margin-top: 12px;
+	color: var(--muted);
+	font-size: 0.85rem;
+}
+.note svg {
+	width: 15px;
+	height: 15px;
+}
+.muted {
+	color: var(--muted);
+}
+.changes {
+	display: grid;
+	gap: 12px;
+}
+.changes article {
+	padding: 18px;
+	border: 1px solid var(--line);
+	border-radius: 14px;
+	background: var(--card);
+}
+.changes header {
+	display: flex;
+	justify-content: space-between;
+	gap: 12px;
+}
+.changes time {
+	color: var(--muted);
+	font-size: 0.8rem;
+}
+.changes ul {
+	margin: 10px 0 0;
+	padding-inline-start: 1.2rem;
+	color: var(--muted);
+	font-size: 0.9rem;
+}
+.legal-list {
+	display: grid;
+	gap: 10px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.legal-list a {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 14px 16px;
+	border: 1px solid var(--line);
+	border-radius: 12px;
+	background: var(--card);
+	color: var(--ink);
+	font-weight: 700;
+	text-decoration: none;
+}
+.legal-list a svg {
+	width: 17px;
+	height: 17px;
+	color: var(--red);
+}
+.legal-list a svg:last-child {
+	margin-left: auto;
+}
+.contact {
+	padding: 24px;
+	border: 1px solid var(--line);
+	border-radius: 18px;
+	background: var(--card);
+	text-align: center;
+}
+.contact > svg {
+	width: 28px;
+	height: 28px;
+	color: var(--red);
+}
+.links {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	justify-content: center;
+}
+.links a,
+.site-links a {
+	display: inline-flex;
+	align-items: center;
+	gap: 7px;
+	color: var(--muted);
+	font-size: 0.85rem;
+	text-decoration: none;
+}
+.links a svg {
+	width: 15px;
+	height: 15px;
+}
+.site-links {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 14px;
+	justify-content: center;
+	margin-top: 16px;
+}
+.page > footer {
+	flex-direction: column;
+}
+
+/* Telegram Mini App follows the client's palette --------------------------- */
+html[data-telegram] {
+	--bg: var(--tg-bg_color, #17212b);
+	--bg-2: var(--tg-secondary_bg_color, #202b36);
+	--card: var(--tg-section_bg_color, var(--tg-secondary_bg_color, #202b36));
+	--ink: var(--tg-text_color, #ffffff);
+	--muted: var(--tg-hint_color, #8f9ba7);
+	--line: var(--tg-hint_color, #3a4652);
+	--green: var(--tg-button_color, #5288c1);
+	--red: var(--tg-link_color, #7ab4e8);
+	--accent-ink: var(--tg-button_text_color, #ffffff);
+}
+html[data-telegram] body {
+	background: var(--bg);
+}
+html[data-telegram] .page,
+html[data-telegram] .manager,
+html[data-telegram] .login-shell,
+html[data-telegram] .error-shell {
+	padding-top: 24px;
+}
+html[data-telegram] .hero-mark {
+	box-shadow: none;
+}
+
 /* Mobile ------------------------------------------------------------------ */
 @media (max-width: 640px) {
 	.page {
@@ -740,6 +929,12 @@ input[type='color'] {
 	}
 	.page > footer {
 		padding-bottom: env(safe-area-inset-bottom);
+	}
+	html[data-telegram] .page,
+	html[data-telegram] .manager,
+	html[data-telegram] .login-shell,
+	html[data-telegram] .error-shell {
+		padding-top: 16px;
 	}
 	.guide-tabs {
 		grid-template-columns: 1fr;
