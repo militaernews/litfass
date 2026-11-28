@@ -112,7 +112,15 @@ h1 span { color: var(--red); }
 .legal > svg { flex: none; width: 26px; height: 26px; color: var(--red); }
 .legal h2 { margin: 0 0 8px; font-size: 1.2rem; }
 .legal p { margin: 0; color: var(--muted); font-size: 0.9rem; }
-.page > footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; padding-top: 24px; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.85rem; }
+.page > footer { display: flex; justify-content: center; padding-top: 28px; border-top: 1px solid var(--line); }
+.support-link {
+	display: inline-flex; align-items: center; gap: 9px; padding: 0.7rem 1.25rem;
+	border-radius: 999px; background: var(--green); color: var(--accent-ink);
+	font-weight: 800; font-size: 0.9rem; text-decoration: none;
+	box-shadow: 0 10px 26px #0002; transition: filter .18s ease, transform .18s ease;
+}
+.support-link:hover { filter: brightness(1.1); transform: translateY(-2px); }
+.support-link svg { width: 17px; height: 17px; }
 @media (max-width: 640px) { .page { padding: 84px 16px 48px; } section { margin-bottom: 52px; } }
 /* Advert manager ---------------------------------------------------------- */
 .manager {

@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import IconArrowLeft from '~icons/lucide/arrow-left';
+	import IconArrowRight from '~icons/lucide/arrow-right';
+	import IconTelegram from '~icons/logos/telegram';
 	import IconShieldCheck from '~icons/lucide/shield-check';
 	import IconExternalLink from '~icons/lucide/external-link';
-	import IconTelegram from '~icons/logos/telegram';
 	import { call, setDevInitData } from './api';
 	import { m } from './paraglide/messages.js';
 	import { localeState } from './locale.svelte';
@@ -59,7 +60,7 @@
 			</a>
 
 			<p class="privacy"><IconShieldCheck /> {s('privacyNote')}</p>
-			<p class="support"><a href="https://t.me/militaernewskontakt" target="_blank" rel="noreferrer">{s('support')}</a></p>
+			<p class="support"><a class="support-link" href="https://t.me/MilitaernewsKontakt" target="_blank" rel="noreferrer"><IconTelegram /> {s('footer')} <IconArrowRight /></a></p>
 			{#if error}<p class="alert" role="alert">{error}</p>{/if}
 
 			{#if import.meta.env.DEV && !isTelegramLaunch(typeof window === 'undefined' ? '' : window.location.hash)}
@@ -111,7 +112,10 @@
 	.secondary :global(svg) { width: 14px; height: 14px; }
 	.privacy { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 24px 0 0; color: var(--muted); font-size: 0.78rem; }
 	.privacy :global(svg) { width: 15px; height: 15px; color: var(--red); }
-	.support { margin: 8px 0 0; font-size: 0.8rem; }
+	.support { margin: 8px 0 0; }
+	.support-link { display: inline-flex; align-items: center; gap: 8px; padding: 0.45rem 1rem; border-radius: 999px; background: var(--green); color: var(--accent-ink); font-size: 0.8rem; font-weight: 800; text-decoration: none; transition: filter .18s ease; }
+	.support-link:hover { filter: brightness(1.12); }
+	.support-link :global(svg) { width: 14px; height: 14px; }
 	.alert { margin: 16px 0 0; padding: 10px 14px; border-radius: 10px; background: #ffe3e0; color: #8a1c13; }
 	.dev-panel { display: grid; gap: 8px; margin-top: 22px; padding-top: 22px; border-top: 1px solid var(--line); text-align: start; }
 	.dev-panel label { display: grid; gap: 5px; font-size: 0.85rem; font-weight: 600; }

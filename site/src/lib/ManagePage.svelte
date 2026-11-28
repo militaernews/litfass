@@ -14,6 +14,8 @@
 	import IconSettings2 from '~icons/lucide/settings-2';
 	import IconX from '~icons/lucide/x';
 	import IconSparkles from '~icons/lucide/sparkles';
+	import IconArrowRight from '~icons/lucide/arrow-right';
+	import IconTelegram from '~icons/logos/telegram';
 	import { injectAdStyles, renderAd, type Ad, type AdStyle } from '@militaernews/litfass';
 	import { call, setDevInitData } from './api';
 	import { m } from './paraglide/messages.js';
@@ -268,7 +270,7 @@
 					<span><IconSparkles /> {me.stars ?? 0} · {s('starsBalance')}</span>
 					<span><IconGift /> {me.earnings ?? 0} · {s('earnings')}</span>
 					<a href="https://t.me/litfass_advertisement_bot?start=stars" target="_blank" rel="noreferrer">{s('buyStars')}</a>
-					<a href="https://t.me/militaernewskontakt" target="_blank" rel="noreferrer">{s('support')}</a>
+					<a class="support-link" href="https://t.me/MilitaernewsKontakt" target="_blank" rel="noreferrer"><IconTelegram /> {s('footer')} <IconArrowRight /></a>
 				</div>
 			{/if}
 		</div>

@@ -14,6 +14,7 @@
 	import IconShieldCheck from '~icons/lucide/shield-check';
 	import IconSparkles from '~icons/lucide/sparkles';
 	import IconSend from '~icons/lucide/send';
+	import IconTelegram from '~icons/logos/telegram';
 	import IconCode from '~icons/lucide/code-xml';
 	import IconTerminal from '~icons/lucide/terminal';
 	import { injectAdStyles, renderAd, type Ad, type AdStyle } from '@militaernews/litfass';
@@ -146,7 +147,9 @@ if ad and CAP.record(chat_id):
 		</section>
 
 		<footer>
-			<a href="https://t.me/militaernewskontakt" target="_blank" rel="noreferrer">{s('footer')}</a>
+			<a class="support-link" href="https://t.me/MilitaernewsKontakt" target="_blank" rel="noreferrer">
+				<IconTelegram /> {s('footer')} <IconArrowRight />
+			</a>
 		</footer>
 	</main>
 {/key}
