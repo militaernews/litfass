@@ -148,15 +148,26 @@ python -m litfass_server.profile   # once: name, descriptions and the logo as pr
 
 `LITFASS_DB` (default `data/litfass.db`), `LITFASS_PORT` (default 3792) and `LITFASS_STATS_TOKEN` (unlocks `/v1/admin/stats`) are optional.
 
-The landing page's Vercel deployment proxies `/litfass/*` to the feed server. Set `LITFASS_ORIGIN` in
-the Vercel project to the feed server's origin (scheme, host and port), and set `LITFASS_PUBLIC_URL` on
-the server to `https://<your-site>/litfass`. Feeds, events, images and statistics then all use the
-site's address; the backend host is never published in a feed.
+## Web app and manager
+
+`site/` is a static SvelteKit app; `vercel.json` at the repository root is the whole deployment
+contract. Vercel installs and builds in `site/`, serves `site/build/`, and forwards `/litfass/*`
+through the single function `api/proxy.ts` to the feed server, which runs next to its database
+outside Vercel. Set `API_ORIGIN` in the Vercel project to the feed server's origin — that address
+is never part of a feed URL or the repository. Set `LITFASS_PUBLIC_URL` on the server to
+`https://<your-site>/litfass` so feeds, events, images and statistics all use the site's address.
+
+Open `/manage` from [@litfass_advertisement_bot](https://t.me/litfass_advertisement_bot) to create,
+edit, pause, publish and delete adverts and read the statistics. The manager sends the Mini App
+`initData` to `POST /v1/admin/ui`; the server checks it against `LITFASS_TOKEN` and only
+`LITFASS_ADMIN_IDS` may change adverts. Outside Telegram the page is read-only. Locally,
+`VITE_API_ORIGIN` points the dev proxy at a feed server on `localhost:3792`.
 
 ## Development
 
 ```sh
 bun install && bun test src && bun run build    # dist/ is committed so git installs need no build step
+cd site && bun install && bun run check && bun run build
 cd python && pytest -q
 cd server && pip install -r requirements.txt pytest-asyncio pytest-aiohttp && pytest -q
 ```

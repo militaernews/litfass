@@ -11,6 +11,7 @@ from datetime import datetime, timezone
 from aiohttp import web
 from telegram import Bot
 
+from litfass_server.api import handle as handle_ui
 from litfass_server.feed import build_feed
 import hmac
 
@@ -27,7 +28,14 @@ MAX_BATCH = 50
 PREFIXES = ("", "/litfass")
 
 
-def make_app(store: Store, bot: Bot | None, public_url: str, stats_token: str = "") -> web.Application:
+def make_app(
+    store: Store,
+    bot: Bot | None,
+    public_url: str,
+    stats_token: str = "",
+    token: str = "",
+    admins: set[int] | None = None,
+) -> web.Application:
     images: dict[tuple[str, int], bytes] = {}
     budget: dict[str, list] = defaultdict(lambda: [0.0, 0])
 
@@ -92,6 +100,9 @@ def make_app(store: Store, bot: Bot | None, public_url: str, stats_token: str = 
             return web.json_response({"error": "unauthorized"}, status=401)
         return web.json_response(network_report(store), headers={"Cache-Control": "no-store"}, dumps=lambda d: json.dumps(d, ensure_ascii=False))
 
+    async def ui(request: web.Request) -> web.Response:
+        return await handle_ui(store, admins or set(), token, request)
+
     async def media(request: web.Request) -> web.Response:
         ad = store.get_ad(request.match_info["ad_id"])
         if not ad or not ad["image_file_id"] or bot is None:
@@ -119,6 +130,7 @@ def make_app(store: Store, bot: Bot | None, public_url: str, stats_token: str = 
         app.router.add_post(f"{prefix}/v1/event/{{key}}", event)
         app.router.add_get(f"{prefix}/v1/stats/{{key}}", stats)
         app.router.add_get(f"{prefix}/v1/admin/stats", network)
+        app.router.add_post(f"{prefix}/v1/admin/ui", ui)
         app.router.add_route("OPTIONS", f"{prefix}/v1/{{tail:.*}}", options)
         app.router.add_get(f"{prefix}/healthz", health)
     return app

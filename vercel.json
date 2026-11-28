@@ -1,26 +1,21 @@
 {
 	"$schema": "https://openapi.vercel.sh/vercel.json",
 	"framework": null,
-	"buildCommand": "cp dist/index.js site/litfass.js",
-	"installCommand": "",
-	"outputDirectory": "site",
-	"cleanUrls": true,
-	"proxy": {
-		"entrypoint": "proxy.js",
-		"matcher": "/litfass/:path*"
-	},
+	"bunVersion": "1.4.x",
+	"installCommand": "cd site && bun install --frozen-lockfile",
+	"buildCommand": "cd site && bun run build",
+	"outputDirectory": "site/build",
+	"routes": [
+		{ "handle": "filesystem" },
+		{ "src": "/manage/?", "dest": "/manage.html" },
+		{ "src": "/litfass/(.*)", "dest": "/api/proxy?path=$1" }
+	],
 	"headers": [
 		{
 			"source": "/(.*)",
 			"headers": [
-				{
-					"key": "X-Content-Type-Options",
-					"value": "nosniff"
-				},
-				{
-					"key": "Referrer-Policy",
-					"value": "strict-origin-when-cross-origin"
-				}
+				{ "key": "X-Content-Type-Options", "value": "nosniff" },
+				{ "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
 			]
 		}
 	]

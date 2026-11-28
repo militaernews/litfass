@@ -1,4 +1,4 @@
-# Only the static landing page and the Node routing middleware are deployed.
+# The feed server and the bot run as long-lived processes outside Vercel.
 python/
 server/
 examples/

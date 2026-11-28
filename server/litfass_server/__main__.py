@@ -42,7 +42,10 @@ async def main() -> None:
     app.bot_data["litfass"] = Ctx(store, admins, public_url)
     register_handlers(app)
 
-    runner = web.AppRunner(make_app(store, app.bot, public_url, os.getenv("LITFASS_STATS_TOKEN", "")), access_log=None)
+    runner = web.AppRunner(
+        make_app(store, app.bot, public_url, os.getenv("LITFASS_STATS_TOKEN", ""), token, admins),
+        access_log=None,
+    )
     async with app:
         await app.bot.set_my_commands(COMMANDS)
         await runner.setup()
