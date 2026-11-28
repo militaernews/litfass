@@ -1,6 +1,29 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { injectAdStyles, renderAd, type Ad, type AdStyle } from '@militaernews/litfass';
+	import { highlight } from '../lib/highlight';
+
+	const webCode = `// Web: bun add github:militaernews/litfass
+import { createReporter, eventUrl, fetchFeed, injectAdStyles, pickAd, renderAd } from '@militaernews/litfass';
+
+const feed = await fetchFeed(FEED_URL);
+const reporter = createReporter(eventUrl(FEED_URL));
+const ad = pickAd(feed, { placement: 'banner' });
+if (ad) {
+	injectAdStyles();
+	slot.append(renderAd(ad, { onClick: (ad) => reporter.report(ad, 'click') }));
+	reporter.report(ad, 'view');
+}`;
+	const botCode = `# Telegram bots: pip install "litfass[telegram] @ https://github.com/militaernews/litfass/archive/refs/tags/v0.2.1.tar.gz#subdirectory=python"
+from litfass import FrequencyCap, fetch_feed, pick_ad, report_events, send_ad
+
+ads = await fetch_feed(FEED_URL)
+ad = pick_ad(ads, "chat")
+if ad and CAP.record(chat_id):
+    await send_ad(bot, chat_id, ad, lang)
+    await report_events(FEED_URL, [(ad.id, "view")])`;
+	const webHtml = highlight(webCode, 'typescript');
+	const botHtml = highlight(botCode, 'python');
 
 	const ad = (variant: NonNullable<AdStyle['variant']>, style: AdStyle, extra: Partial<Ad> = {}): Ad => ({
 		id: variant,
@@ -43,6 +66,7 @@
 			<div class="actions">
 				<a class="button" href="https://t.me/litfass_advertisement_bot">Open the bot</a>
 				<a class="button secondary" href="/manage">Manage adverts</a>
+				<a class="button secondary" href="https://militaernews.vercel.app">Militär News</a>
 				<a class="button secondary" href="https://github.com/militaernews/litfass">GitHub</a>
 			</div>
 		</div>
@@ -77,26 +101,9 @@
 		<li>Name your site, bot or channel and pick the content you publish.</li>
 		<li>Use the feed URL the bot gives you with one of the packages below. <code>/stats</code> shows how it's going.</li>
 	</ol>
-	<pre><code>// Web: bun add github:militaernews/litfass
-import &#123; createReporter, eventUrl, fetchFeed, injectAdStyles, pickAd, renderAd &#125; from '@militaernews/litfass';
-
-const feed = await fetchFeed(FEED_URL);
-const reporter = createReporter(eventUrl(FEED_URL));
-const ad = pickAd(feed, &#123; placement: 'banner' &#125;);
-if (ad) &#123;
-	injectAdStyles();
-	slot.append(renderAd(ad, &#123; onClick: (ad) =&gt; reporter.report(ad, 'click') &#125;));
-	reporter.report(ad, 'view');
-&#125;</code></pre>
+	<pre><code class="hljs">{@html webHtml}</code></pre>
 	<p></p>
-	<pre><code># Telegram bots: pip install "litfass[telegram] @ https://github.com/militaernews/litfass/archive/refs/tags/v0.2.1.tar.gz#subdirectory=python"
-from litfass import FrequencyCap, fetch_feed, pick_ad, report_events, send_ad
-
-ads = await fetch_feed(FEED_URL)
-ad = pick_ad(ads, "chat")
-if ad and CAP.record(chat_id):
-    await send_ad(bot, chat_id, ad, lang)
-    await report_events(FEED_URL, [(ad.id, "view")])</code></pre>
+	<pre><code class="hljs">{@html botHtml}</code></pre>
 
 	<h2>Keep it legal</h2>
 	<p>
@@ -107,5 +114,6 @@ if ad and CAP.record(chat_id):
 
 	<footer>
 		MIT licensed · <a href="https://github.com/militaernews/litfass">github.com/militaernews/litfass</a>
+		· Built by <a href="https://militaernews.vercel.app">Militär News</a>
 	</footer>
 </main>

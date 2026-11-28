@@ -440,3 +440,104 @@ input[type='color'] {
 		align-items: start;
 	}
 }
+
+/* Code samples ------------------------------------------------------------ */
+.hljs {
+	background: transparent;
+	color: inherit;
+}
+.hljs-comment,
+.hljs-quote {
+	color: #8fb3c9;
+	font-style: italic;
+}
+.hljs-keyword,
+.hljs-literal,
+.hljs-selector-tag {
+	color: #ff8fb1;
+}
+.hljs-string,
+.hljs-regexp,
+.hljs-addition {
+	color: #9be7ff;
+}
+.hljs-number,
+.hljs-symbol,
+.hljs-bullet {
+	color: #f4d35e;
+}
+.hljs-title,
+.hljs-title.function_,
+.hljs-section {
+	color: #86efac;
+}
+.hljs-built_in,
+.hljs-type,
+.hljs-class .hljs-title {
+	color: #c4b5fd;
+}
+.hljs-attr,
+.hljs-attribute,
+.hljs-variable,
+.hljs-template-variable,
+.hljs-params {
+	color: #f2fbff;
+}
+.hljs-meta,
+.hljs-subst {
+	color: #8fb3c9;
+}
+
+/* Advert previews --------------------------------------------------------- */
+.demo {
+	padding: 18px;
+	background: var(--card);
+	border: 1px solid var(--bg-2);
+	border-radius: 16px;
+}
+.demo .litfass-ad,
+.preview .litfass-ad {
+	border: 1px solid #ffffff26;
+	box-shadow: 0 10px 26px #0002, inset 0 1px #ffffff1a;
+	transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.demo .litfass-ad:hover,
+.preview .litfass-ad:hover {
+	transform: translateY(-3px);
+	box-shadow: 0 18px 38px #0003;
+}
+.demo .litfass-ad__label,
+.preview .litfass-ad__label {
+	background: #ffffff26;
+	border-radius: 999px;
+	padding: 0.15rem 0.55rem;
+	letter-spacing: 0.06em;
+}
+.demo .litfass-ad__media,
+.preview .litfass-ad__media {
+	display: grid;
+	place-items: center;
+	min-width: 3.6rem;
+	min-height: 3.6rem;
+	border-radius: 12px;
+	background: #ffffff1a;
+}
+.demo .litfass-ad__media img,
+.preview .litfass-ad__media img {
+	border-radius: 10px;
+}
+.demo .litfass-ad__title,
+.preview .litfass-ad__title {
+	font-weight: 700;
+	letter-spacing: -0.01em;
+}
+.demo .litfass-ad__cta,
+.preview .litfass-ad__cta {
+	box-shadow: 0 4px 12px #0002;
+	font-weight: 700;
+	letter-spacing: 0.01em;
+}
+.demo .litfass-ad__cta:hover,
+.preview .litfass-ad__cta:hover {
+	filter: brightness(1.12);
+}

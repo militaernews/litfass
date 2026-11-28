@@ -10,7 +10,8 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
 	},
 	"dependencies": {
-		"@militaernews/litfass": "file:.."
+		"@militaernews/litfass": "file:..",
+		"highlight.js": "^11.12.0"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-static": "4.0.1",
