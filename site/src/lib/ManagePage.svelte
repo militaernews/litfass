@@ -11,13 +11,10 @@
 	import IconChart from '~icons/lucide/chart-no-axes-column-increasing';
 	import IconLayoutGrid from '~icons/lucide/layout-grid';
 	import IconMapPin from '~icons/lucide/map-pinned';
-	import IconSettings2 from '~icons/lucide/settings-2';
-	import IconX from '~icons/lucide/x';
 	import IconSparkles from '~icons/lucide/sparkles';
 	import IconArrowRight from '~icons/lucide/arrow-right';
 	import IconTelegram from '~icons/logos/telegram';
-	import { injectAdStyles, type Ad, type AdStyle } from '@militaernews/litfass';
-	import AdCard from './AdCard.svelte';
+	import type { Ad } from '@militaernews/litfass';
 	import { call, setDevInitData } from './api';
 	import { m } from './paraglide/messages.js';
 	import { localeState } from './locale.svelte';
@@ -52,48 +49,6 @@
 		stars?: number;
 		earnings?: number;
 	}
-	interface Draft {
-		url: string;
-		emoji: string;
-		weight: number;
-		start: string;
-		end: string;
-		paused: boolean;
-		paid: boolean;
-		video: string;
-		taskChat: string;
-		placements: string[];
-		categories: string[];
-		variant: 'card' | 'banner' | 'poster';
-		background: string;
-		color: string;
-		accent: string;
-		en: { title: string; body: string; cta: string };
-		de: { title: string; body: string; cta: string };
-	}
-
-	const PLACEMENTS = ['rewarded', 'banner', 'chat'];
-	const CATEGORIES = ['news', 'military', 'politics', 'gaming', 'tech', 'humor', 'community', 'education'];
-	const emptyDraft = (): Draft => ({
-		url: 'https://t.me/',
-		emoji: '📰',
-		weight: 1,
-		start: '',
-		end: '',
-		paused: true,
-		paid: false,
-		video: '',
-		taskChat: '',
-		placements: [],
-		categories: [],
-		variant: 'card',
-		background: '#0c3a6b',
-		color: '#e6f6ff',
-		accent: '#2ec5ff',
-		en: { title: '', body: '', cta: '' },
-		de: { title: '', body: '', cta: '' }
-	});
-
 	let me = $state<Me | null>(null);
 	let ads = $state<ManagedAd[]>([]);
 	let publishers = $state<Array<{ id: number; name: string; key: string; kind: string; blocked: boolean; allow_free: number | boolean }>>([]);
@@ -101,24 +56,12 @@
 	let days = $state<7 | 30 | 90>(30);
 	let visible = $state({ view: true, click: true, reward: true });
 	let tab = $state<'ads' | 'placements' | 'stats'>('ads');
-	let draft = $state<Draft>(emptyDraft());
-	let editingId = $state<string | null>(null);
-	let formOpen = $state(false);
 	let devKey = $state('');
 	let error = $state('');
 	let notice = $state('');
 	let busy = $state(false);
 
-	const asAd = (d: Draft): Ad => ({
-		id: editingId ?? 'preview',
-		url: d.url,
-		emoji: d.emoji || undefined,
-		weight: d.weight,
-		start: d.start || undefined,
-		end: d.end || undefined,
-		text: { en: d.en, ...(d.de.title ? { de: d.de } : {}) },
-		style: { variant: d.variant, background: d.background, color: d.color, accent: d.accent } satisfies AdStyle
-	});
+
 
 	async function reload() {
 		const [identity, adverts, placements, overview] = await Promise.all([
@@ -134,7 +77,6 @@
 	}
 
 	onMount(async () => {
-		injectAdStyles();
 		if (import.meta.env.DEV && !isTelegramLaunch(window.location.hash)) {
 			const saved = localStorage.getItem('litfass-dev-init-data');
 			if (saved) setDevInitData(saved);
@@ -152,73 +94,16 @@
 		}
 	});
 
-	const draftAd = $derived(asAd(draft));
-
 	function openCreate() {
-		editingId = null;
-		draft = emptyDraft();
-		formOpen = true;
-		error = '';
+		goto('/manage/new');
 	}
 
 	function openEdit(ad: ManagedAd) {
-		editingId = ad.id;
-		draft = {
-			...emptyDraft(),
-			url: ad.url,
-			emoji: ad.emoji ?? '',
-			weight: ad.weight ?? 1,
-			start: ad.start ?? '',
-			end: ad.end ?? '',
-			paused: Boolean(ad.paused),
-			paid: Boolean(ad.paid),
-			video: ad.video ?? '',
-			taskChat: ad.task?.chat ?? '',
-			placements: [...(ad.placements ?? [])],
-			categories: [...(ad.categories ?? [])],
-			variant: ad.style?.variant ?? 'card',
-			background: ad.style?.background ?? '#0c3a6b',
-			color: ad.style?.color ?? '#e6f6ff',
-			accent: ad.style?.accent ?? '#2ec5ff',
-			en: ad.text.en ?? { title: '', body: '', cta: '' },
-			de: ad.text.de ?? { title: '', body: '', cta: '' }
-		};
-		formOpen = true;
-		error = '';
-	}
-
-	async function save() {
-		busy = true;
-		error = '';
-		try {
-			await call(editingId ? 'update_ad' : 'create_ad', {
-				...(editingId ? { id: editingId } : {}),
-				url: draft.url,
-				emoji: draft.emoji || null,
-				weight: Number(draft.weight),
-				start: draft.start || null,
-				end: draft.end || null,
-				paused: draft.paused,
-				paid: draft.paid,
-				video: draft.video || null,
-				taskChat: draft.taskChat || null,
-				placements: draft.placements,
-				categories: draft.categories,
-				style: { variant: draft.variant, background: draft.background, color: draft.color, accent: draft.accent },
-				text: { en: draft.en, ...(draft.de.title ? { de: draft.de } : {}) }
-			});
-			formOpen = false;
-			notice = s(editingId ? 'updated' : 'created');
-			await reload();
-		} catch (cause) {
-			error = cause instanceof Error ? cause.message : 'Could not save';
-		} finally {
-			busy = false;
-		}
+		goto(`/manage/ad?id=${encodeURIComponent(ad.id)}`);
 	}
 
 	async function remove(ad: ManagedAd) {
-		if (!confirm(s('deleteConfirm', { title: ad.text[localeState.value]?.title ?? ad.text.en?.title ?? ad.id }))) return;
+		if (!confirm(s('deleteConfirm', { title: ad.text.en?.title ?? ad.id }))) return;
 		busy = true;
 		try {
 			await call('delete_ad', { id: ad.id });
@@ -452,58 +337,4 @@
 	{/if}
 </div>
 
-{#if formOpen}
-	<div class="modal" role="dialog" aria-modal="true" aria-label={s('managerTitle')}>
-		<div class="sheet">
-			<header>
-				<h2><IconSettings2 /> {editingId ? s('editAdvert') : s('createAdvert')}</h2>
-				<button onclick={() => (formOpen = false)} aria-label={s('close')}><IconX /></button>
-			</header>
-			<div class="form-grid">
-				<label class="wide">{s('link')}<input type="url" bind:value={draft.url} /></label>
-				<label class="wide">{s('videoField')}<input type="url" bind:value={draft.video} placeholder="https://t.me/channel/123" /><small>{s('videoHint')}</small></label>
-				<label class="wide">{s('taskField')}<input bind:value={draft.taskChat} placeholder="@channel" /><small>{s('taskHint')}</small></label>
-				<label>{s('emoji')}<input bind:value={draft.emoji} maxlength="8" /></label>
-				<label>{s('weightLabel')}<input type="number" min="0" max="1000" bind:value={draft.weight} /></label>
-				<label>{s('start')}<input type="date" bind:value={draft.start} /></label>
-				<label>{s('end')}<input type="date" bind:value={draft.end} /></label>
-				<label class="check"><input type="checkbox" bind:checked={draft.paused} /> {s('startPaused')}</label>
-				<label class="check wide"><input type="checkbox" bind:checked={draft.paid} /> {s('paidCampaign')}</label>
-				<p class="hint wide">{draft.paid ? s('paidHint') : s('freeHint')}</p>
-				<fieldset>
-					<legend>{s('placements')}</legend>
-					{#each PLACEMENTS as item}<label class="check"><input type="checkbox" value={item} bind:group={draft.placements} /> {item}</label>{/each}
-				</fieldset>
-				<fieldset>
-					<legend>{s('categories')}</legend>
-					{#each CATEGORIES as item}<label class="check"><input type="checkbox" value={item} bind:group={draft.categories} /> {item}</label>{/each}
-				</fieldset>
-				<fieldset class="wide">
-					<legend>{s('look')}</legend>
-					<label>{s('variant')}<select bind:value={draft.variant}><option value="card">card</option><option value="banner">banner</option><option value="poster">poster</option></select></label>
-					<label>{s('background')}<input type="color" bind:value={draft.background} /></label>
-					<label>{s('textColor')}<input type="color" bind:value={draft.color} /></label>
-					<label>{s('accent')}<input type="color" bind:value={draft.accent} /></label>
-				</fieldset>
-				{#each ['en', 'de'] as textLang}
-					<fieldset class="wide">
-						<legend>{s(textLang === 'en' ? 'englishText' : 'germanText')}</legend>
-						<label>{s('titleLabel')}<input bind:value={draft[textLang as 'en' | 'de'].title} maxlength="60" /></label>
-						<label>{s('bodyLabel')}<input bind:value={draft[textLang as 'en' | 'de'].body} maxlength="200" /></label>
-						<label>{s('buttonLabel')}<input bind:value={draft[textLang as 'en' | 'de'].cta} maxlength="30" /></label>
-					</fieldset>
-				{/each}
-			</div>
-			<div class="preview-wrap">
-				<h3>{s('preview')}</h3>
-				<AdCard ad={draftAd} lang={localeState.value} />
-			</div>
-			{#if error}<p class="alert" role="alert">{error}</p>{/if}
-			<footer>
-				<button onclick={() => (formOpen = false)}>{s('cancel')}</button>
-				<button class="primary" disabled={busy} onclick={save}>{busy ? s('saving') : s('save')}</button>
-			</footer>
-		</div>
-	</div>
-{/if}
 {/key}

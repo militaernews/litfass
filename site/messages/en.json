@@ -237,5 +237,18 @@
   "clicksSeries": "Clicks",
   "rewardSeries": "Rewards",
   "avgCtr": "Avg CTR",
-  "noData": "No data yet."
+  "noData": "No data yet.",
+  "editAdvertPage": "Edit advert",
+  "createAdvertPage": "New advert",
+  "stepLink": "Link",
+  "stepTexts": "Texts",
+  "stepLook": "Look",
+  "stepReview": "Review",
+  "backToManager": "Back to manager",
+  "adNotFound": "Advert not found.",
+  "saveAdvert": "Save advert",
+  "createdAdvert": "Advert created.",
+  "updatedAdvert": "Advert saved.",
+  "eHttps": "Please enter an https:// link.",
+  "needText": "Fill in the English title and button."
 }

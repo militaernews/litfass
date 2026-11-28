@@ -203,6 +203,11 @@ async def handle(store: Store, admins: set[int], token: str, request: web.Reques
                 "campaigns": campaign_report(store, None if admin else uid),
             }
         )
+    if action == "get_ad":
+        ad = store.get_ad(str(data.get("id", "")))
+        if not ad or (not admin and ad.get("created_by") != uid):
+            return _error("not found", 404)
+        return web.json_response({"ok": True, "ad": ad})
     if action == "set_publisher":
         publisher = store.get_publisher(int(data.get("id", 0) or 0))
         if not publisher or (not admin and publisher["owner_id"] != uid):

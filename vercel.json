@@ -39,6 +39,8 @@
 		{ "src": "/settings/?", "dest": "/settings.html" },
 		{ "src": "/about/?", "dest": "/about.html" },
 		{ "src": "/guide/?", "dest": "/guide.html" },
+		{ "src": "/manage/new/?", "dest": "/manage/new.html" },
+		{ "src": "/manage/ad/?", "dest": "/manage/ad.html" },
 		{ "src": "/manage/?", "dest": "/manage.html" },
 		{ "src": "/login/?", "dest": "/login.html" },
 		{ "src": "/litfass/(.*)", "dest": "/api/proxy?path=$1" }

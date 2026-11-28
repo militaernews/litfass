@@ -237,5 +237,18 @@
   "clicksSeries": "Klicks",
   "rewardSeries": "Rewards",
   "avgCtr": "Ø CTR",
-  "noData": "Noch keine Daten."
+  "noData": "Noch keine Daten.",
+  "editAdvertPage": "Anzeige bearbeiten",
+  "createAdvertPage": "Neue Anzeige",
+  "stepLink": "Link",
+  "stepTexts": "Texte",
+  "stepLook": "Aussehen",
+  "stepReview": "Prüfen",
+  "backToManager": "Zurück zur Verwaltung",
+  "adNotFound": "Anzeige nicht gefunden.",
+  "saveAdvert": "Anzeige speichern",
+  "createdAdvert": "Anzeige erstellt.",
+  "updatedAdvert": "Anzeige gespeichert.",
+  "eHttps": "Bitte einen https:// Link eingeben.",
+  "needText": "Titel und Button auf Englisch ausfüllen."
 }

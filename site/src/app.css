@@ -541,6 +541,100 @@ input[type='color'] {
 	font-weight: 500;
 }
 
+/* Ad editor pages --------------------------------------------------------- */
+.editor-page {
+	max-width: 760px;
+}
+.editor-page .back,
+.editor-page .btn-ghost {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 0.5rem 0.9rem;
+	border: 1px solid var(--line);
+	border-radius: 999px;
+	background: var(--card);
+	color: var(--muted);
+	font: inherit;
+	font-size: 0.85rem;
+	font-weight: 700;
+	cursor: pointer;
+}
+.editor-head {
+	margin: 18px 0;
+}
+.editor-head h1 {
+	font-size: clamp(1.8rem, 6vw, 2.6rem);
+}
+.progress-wide {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-bottom: 18px;
+}
+.progress-wide span {
+	padding: 0.4rem 0.8rem;
+	border: 1px solid var(--line);
+	border-radius: 999px;
+	color: var(--muted);
+	font-size: 0.78rem;
+	font-weight: 700;
+}
+.progress-wide span.active {
+	background: var(--green);
+	border-color: var(--green);
+	color: var(--accent-ink);
+}
+.progress-wide span.done {
+	opacity: 0.7;
+}
+.editor-card {
+	padding: clamp(18px, 4vw, 28px);
+	border: 1px solid var(--line);
+	border-radius: 18px;
+	background: var(--card);
+}
+.editor-card h2 {
+	margin: 0 0 18px;
+}
+.editor-card .form-grid {
+	margin-top: 0;
+}
+.summary {
+	display: grid;
+	gap: 6px;
+	margin: 16px 0 0;
+	padding: 0;
+	list-style: none;
+	color: var(--muted);
+	font-size: 0.85rem;
+}
+.editor-nav {
+	display: flex;
+	justify-content: space-between;
+	gap: 10px;
+	margin-top: 24px;
+}
+.editor-nav button,
+.editor-nav .btn-ghost {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 0.7rem 1.2rem;
+	border: 1px solid var(--line);
+	border-radius: 999px;
+	background: var(--bg);
+	color: var(--ink);
+	font: inherit;
+	font-weight: 700;
+	cursor: pointer;
+}
+.editor-nav button.primary {
+	background: var(--green);
+	border-color: var(--green);
+	color: var(--accent-ink);
+}
+
 /* Manager statistics ------------------------------------------------------ */
 .stats-head {
 	display: flex;
