@@ -37,14 +37,24 @@
 						"pattern": "^https://"
 					},
 					"videoKind": {
-						"enum": ["video", "gif"]
+						"enum": [
+							"video",
+							"gif"
+						]
 					},
 					"task": {
 						"type": "object",
-						"required": ["type", "chat"],
+						"required": [
+							"type",
+							"chat"
+						],
 						"properties": {
-							"type": { "const": "join" },
-							"chat": { "type": "string" }
+							"type": {
+								"const": "join"
+							},
+							"chat": {
+								"type": "string"
+							}
 						}
 					},
 					"placements": {
@@ -133,6 +143,15 @@
 							}
 						},
 						"additionalProperties": false
+					},
+					"trackId": {
+						"type": "string"
+					},
+					"boosted": {
+						"type": "boolean"
+					},
+					"ab": {
+						"type": "object"
 					}
 				}
 			}

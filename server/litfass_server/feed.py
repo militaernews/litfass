@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import time
 from datetime import date, datetime, timezone
 
 from litfass_server.store import Store
@@ -59,7 +60,19 @@ def is_live(ad: dict, today: date) -> bool:
 
 def public_ad(ad: dict, public_url: str) -> dict:
     """The advert in the litfass feed format (the same one the web and Python packages read)."""
-    item: dict = {"id": ad["id"], "url": ad["url"], "weight": ad["weight"], "text": ad["text"]}
+    url = ad["url"]
+    track = ad.get("track_id")
+    if track:
+        joiner = "&" if "?" in url else "?"
+        url = f"{url}{joiner}ltf={track}&utm_source=litfass&utm_campaign={track}"
+    item: dict = {
+        "id": ad["id"],
+        "url": url,
+        "trackId": track,
+        "boosted": ad.get("boosted_until", 0) > time.time(),
+        "weight": ad["weight"],
+        "text": ad["text"],
+    }
     for field in ("emoji", "start", "end"):
         if ad[field]:
             item[field] = ad[field]
@@ -89,5 +102,7 @@ def build_feed(store: Store, publisher: dict, public_url: str, now: datetime | N
         if is_live(ad, today)
         and fits(ad, publisher)
         and (ad["paid"] or publisher["allow_free"])
+        and (not publisher.get("boost_only") or ad.get("boosted_until", 0) > time.time())
     ]
+    ads.sort(key=lambda ad: (ad.get("boosted_until", 0) > time.time(), ad["weight"]), reverse=True)
     return {"version": 1, "ads": ads}

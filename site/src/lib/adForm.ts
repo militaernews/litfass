@@ -5,6 +5,7 @@ export interface Draft {
 	emoji: string;
 	video: string;
 	taskChat: string;
+	ab: { title: string; body: string; cta: string };
 	weight: number;
 	start: string;
 	end: string;
@@ -25,6 +26,7 @@ export const emptyDraft = (): Draft => ({
 	emoji: '📰',
 	video: '',
 	taskChat: '',
+	ab: { title: '', body: '', cta: '' },
 	weight: 1,
 	start: '',
 	end: '',
@@ -47,6 +49,7 @@ export function fromAd(ad: Ad & { paused?: boolean; paid?: boolean; task?: { typ
 		emoji: ad.emoji ?? '',
 		video: ad.video ?? '',
 		taskChat: ad.task?.chat ?? '',
+		ab: (ad as any).ab ?? { title: '', body: '', cta: '' },
 		weight: ad.weight ?? 1,
 		start: ad.start ?? '',
 		end: ad.end ?? '',
@@ -70,6 +73,7 @@ export function toPayload(draft: Draft, id?: string): Record<string, unknown> {
 		emoji: draft.emoji || null,
 		video: draft.video || null,
 		taskChat: draft.taskChat || null,
+		ab: draft.ab.title ? draft.ab : null,
 		weight: Number(draft.weight),
 		start: draft.start || null,
 		end: draft.end || null,
@@ -93,6 +97,7 @@ export function asAd(draft: Draft, id = 'preview'): Ad {
 		end: draft.end || undefined,
 		text: { en: draft.en, ...(draft.de.title ? { de: draft.de } : {}) },
 		style: { variant: draft.variant, background: draft.background, color: draft.color, accent: draft.accent },
-		...(draft.taskChat ? { task: { type: 'join' as const, chat: draft.taskChat } } : {})
+		...(draft.taskChat ? { task: { type: 'join' as const, chat: draft.taskChat } } : {}),
+		...(draft.ab.title ? { ab: draft.ab } : {})
 	};
 }

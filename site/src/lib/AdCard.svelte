@@ -3,6 +3,9 @@
 	import IconMegaphone from '~icons/lucide/megaphone';
 	import IconArrowUpRight from '~icons/lucide/arrow-up-right';
 	import IconSparkles from '~icons/lucide/sparkles';
+	import IconInfo from '~icons/lucide/info';
+	import { m } from './paraglide/messages.js';
+	import { localeState } from './locale.svelte';
 
 	let {
 		ad,
@@ -19,6 +22,8 @@
 		].join(';')
 	);
 	const variant = $derived(ad.style?.variant ?? 'card');
+	const s = (key: string) => (m as unknown as Record<string, (() => string) | undefined>)[key]?.() ?? '';
+	let showWhy = $state(false);
 </script>
 
 <article
@@ -30,7 +35,14 @@
 >
 	<div class="absolute right-3 top-3 z-10 flex items-center gap-1 rounded-full bg-black/20 px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-white backdrop-blur">
 		<IconMegaphone /> {label}
+		{#if (ad as any).boosted}<span class="rounded-full bg-amber-400 px-1.5 text-black">★</span>{/if}
+		<button class="rounded-full p-0.5 hover:bg-white/20" onclick={() => (showWhy = !showWhy)} aria-label={s('whyAd')}><IconInfo class="size-3" /></button>
 	</div>
+	{#if showWhy}
+		<p class="absolute inset-x-3 top-10 z-10 rounded-lg bg-black/75 px-2.5 py-1.5 text-[0.7rem] text-white backdrop-blur">
+			<strong>{s('whyAd')}</strong> {s('whyAdText')}
+		</p>
+	{/if}
 
 	<div class="flex items-center gap-3 p-4" class:flex-col={variant === 'poster'}>
 		<div class="grid size-14 shrink-0 place-items-center overflow-hidden rounded-xl bg-base-200 text-3xl">

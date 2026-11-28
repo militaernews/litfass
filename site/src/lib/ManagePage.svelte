@@ -41,6 +41,8 @@
 		paused?: boolean;
 		paid?: boolean;
 		created_by?: number;
+		trackId?: string;
+		boosted?: boolean;
 		task?: { type: 'join'; chat: string };
 	}
 	interface Me {
@@ -51,7 +53,7 @@
 	}
 	let me = $state<Me | null>(null);
 	let ads = $state<ManagedAd[]>([]);
-	let publishers = $state<Array<{ id: number; name: string; key: string; kind: string; blocked: boolean; allow_free: number | boolean }>>([]);
+	let publishers = $state<Array<{ id: number; name: string; key: string; kind: string; blocked: boolean; allow_free: number | boolean; price_per_click?: number; audience_size?: number; boost_only?: number | boolean }>>([]);
 	let stats = $state<Stats | null>(null);
 	let days = $state<7 | 30 | 90>(30);
 	let visible = $state({ view: true, click: true, reward: true });
@@ -114,6 +116,22 @@
 		} finally {
 			busy = false;
 		}
+	}
+
+	async function boost(ad: ManagedAd) {
+		await call('boost_ad', { id: ad.id });
+		notice = s('boosted');
+		await reload();
+	}
+
+	async function updatePublisher(publisher: { id: number; price_per_click?: number; audience_size?: number; boost_only?: number | boolean }, fields: Record<string, unknown>) {
+		await call('set_publisher', { id: publisher.id, ...fields });
+		await reload();
+	}
+
+	function setPrice(publisher: { id: number; price_per_click?: number }) {
+		const value = prompt(s('pricePerClick'), String(publisher.price_per_click ?? 1));
+		if (value && Number.isFinite(Number(value))) updatePublisher(publisher, { price_per_click: Number(value) });
 	}
 
 	async function toggleFree(publisher: { id: number; allow_free: number | boolean }) {
@@ -207,6 +225,18 @@
 	</nav>
 
 	{#if tab === 'ads'}
+		<div class="next-steps">
+			<h2>{s('nextSteps')}</h2>
+			{#if publishers.length === 0}
+				<a href="/guide" class="step-card"><IconMapPin /> {s('stepNoPlacement')} <IconArrowRight /></a>
+			{:else if ads.length === 0}
+				<button class="step-card" onclick={openCreate}><IconPlus /> {s('stepNoAds')} <IconArrowRight /></button>
+			{:else if stats && stats.ctr < 2}
+				<button class="step-card" onclick={openCreate}><IconSparkles /> {s('stepLowCtr')} <IconArrowRight /></button>
+			{:else}
+				<p class="empty">{s('stepAllDone')}</p>
+			{/if}
+		</div>
 		<div class="toolbar">
 			<p>{s('adsHint')}</p>
 			{#if me?.admin}<button class="primary" onclick={openCreate}><IconPlus /> {s('newAdvert')}</button>{/if}
@@ -222,6 +252,7 @@
 							<div>
 								<strong>{title(ad, ad.id)}</strong>
 								<a href={ad.url} target="_blank" rel="noreferrer">{ad.url}</a>
+								{#if ad.trackId}<code class="track-id">{s('trackingId')}: {ad.trackId}</code>{/if}
 								<div class="chips">
 									<span class:live={!ad.paused} class="badge">{ad.paused ? s('paused') : s('live')}</span>
 									<span class="badge">{s('weight')} {ad.weight ?? 1}</span>
@@ -231,6 +262,7 @@
 						</div>
 						{#if me?.admin}
 							<div class="row-actions">
+								<button onclick={() => boost(ad)} title={s('boostCost')}>★ {ad.boosted ? s('boosted') : s('boost')}</button>
 								<button onclick={() => openEdit(ad)}><IconPencil /> {s('edit')}</button>
 								<button class="danger" disabled={busy} onclick={() => remove(ad)}><IconTrash2 /> {s('delete')}</button>
 							</div>
@@ -253,10 +285,17 @@
 								{#if publisher.blocked}<span class="badge">{s('blocked')}</span>{/if}
 							</div>
 							<code class="key">{publisher.key}</code>
+							<div class="chips">
+								<span class="badge">{s('pricePerClick')}: {publisher.price_per_click ?? 1}</span>
+								<span class="badge">{s('audienceSize')}: {publisher.audience_size ?? 0}</span>
+								{#if publisher.boost_only}<span class="badge">{s('boostOnly')}</span>{/if}
+							</div>
 						</div>
 						<div class="row-actions">
 							<button onclick={() => navigator.clipboard.writeText(publisher.key)}><IconCopy /> {s('copyKey')}</button>
 							<button onclick={() => toggleFree(publisher)}>{publisher.allow_free ? s('deny') : s('allow')} · {s('allowFree')}</button>
+							<button onclick={() => setPrice(publisher)}>{s('pricePerClick')}</button>
+							<button onclick={() => updatePublisher(publisher, { boost_only: !publisher.boost_only })}>{s('boostOnly')}</button>
 						</div>
 					</li>
 				{/each}

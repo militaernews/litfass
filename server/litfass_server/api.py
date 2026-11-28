@@ -18,7 +18,7 @@ from urllib.parse import parse_qsl
 from aiohttp import web
 
 from litfass_server.feed import CATEGORIES, PLACEMENTS, VARIANTS
-from litfass_server.pricing import ACTIVATION_STARS
+from litfass_server.pricing import ACTIVATION_STARS, BOOST_SECONDS, BOOST_STARS
 from litfass_server.stats import deep_report, network_report, publisher_report, since
 from litfass_server.store import PUBLISHER_FIELDS, Store
 from litfass_server.video import POST as VIDEO_POST
@@ -28,7 +28,7 @@ MAX_AGE = 24 * 3600
 HEX = re.compile(r"^#[0-9a-fA-F]{6}$")
 LANG = re.compile(r"^[a-z]{2}(-[A-Za-z]{2})?$")
 MAX_TEXT = {"title": 60, "body": 200, "cta": 30}
-EDITABLE = ("url", "emoji", "video", "taskChat", "weight", "start", "end", "paused", "paid", "placements", "categories", "style")
+EDITABLE = ("url", "emoji", "video", "taskChat", "ab", "weight", "start", "end", "paused", "paid", "placements", "categories", "style")
 
 
 def verify_init_data(raw: str | None, token: str, now: int | None = None) -> dict | None:
@@ -87,6 +87,9 @@ def _parse(data: dict, current: dict | None) -> tuple[dict, dict, str | None]:
                 or not (re.fullmatch(r"@[A-Za-z0-9_]{4,}", value) or re.fullmatch(r"-?\d{6,}", value))
             ):
                 return {}, {}, "task chat must be @username or a chat id"
+        elif key == "ab":
+            if not isinstance(value, dict) or any(not isinstance(v, str) for v in value.values()):
+                return {}, {}, "A/B variant must be an object of strings"
         elif key == "weight":
             if isinstance(value, bool) or not isinstance(value, int) or not 0 <= value <= 1000:
                 return {}, {}, "weight must be an integer between 0 and 1000"
@@ -208,6 +211,14 @@ async def handle(store: Store, admins: set[int], token: str, request: web.Reques
         if not ad or (not admin and ad.get("created_by") != uid):
             return _error("not found", 404)
         return web.json_response({"ok": True, "ad": ad})
+    if action == "boost_ad":
+        ad = store.get_ad(str(data.get("id", "")))
+        if not ad or (not admin and ad.get("created_by") != uid):
+            return _error("not found", 404)
+        if not store.spend_stars(uid, BOOST_STARS):
+            return _error("not enough Stars", 402)
+        store.update_ad(ad["id"], boosted_until=int(time.time()) + BOOST_SECONDS)
+        return web.json_response({"ok": True, "stars": store.stars(uid)})
     if action == "set_publisher":
         publisher = store.get_publisher(int(data.get("id", 0) or 0))
         if not publisher or (not admin and publisher["owner_id"] != uid):

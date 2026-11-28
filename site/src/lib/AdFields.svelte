@@ -10,6 +10,15 @@
 
 	const s = (key: string) => (m as unknown as Record<string, (() => string) | undefined>)[key]?.() ?? '';
 	const show = (name: string) => sections.includes(name);
+
+	function suggest() {
+		const match = draft.url.match(/t\.me\/([A-Za-z0-9_]+)/);
+		const name = match?.[1] ?? '';
+		if (!name && !draft.url.startsWith('https://')) return;
+		draft.en.title ||= name ? `@${name}` : 'Your project';
+		draft.en.body ||= localeState.value === 'de' ? 'Neue Beiträge – direkt aus dem Kanal.' : 'Fresh updates, straight from the source.';
+		draft.en.cta ||= 'Open';
+	}
 	const PLACEMENTS = ['rewarded', 'banner', 'chat'];
 	const CATEGORIES = ['news', 'military', 'politics', 'gaming', 'tech', 'humor', 'community', 'education'];
 </script>
@@ -20,6 +29,7 @@
 		<label>{s('emoji')}<input bind:value={draft.emoji} maxlength="8" /></label>
 		<label class="wide">{s('videoField')}<input type="url" bind:value={draft.video} placeholder="https://t.me/channel/123" /><small>{s('videoHint')}</small></label>
 		<label class="wide">{s('taskField')}<input bind:value={draft.taskChat} placeholder="@channel" /><small>{s('taskHint')}</small></label>
+		<button type="button" class="suggest" onclick={suggest}>✨ {s('suggest')}</button>
 	{/if}
 
 	{#if show('texts')}
@@ -28,6 +38,12 @@
 			<label>{s('titleLabel')}<input bind:value={draft.en.title} maxlength="60" /></label>
 			<label>{s('bodyLabel')}<input bind:value={draft.en.body} maxlength="200" /></label>
 			<label>{s('buttonLabel')}<input bind:value={draft.en.cta} maxlength="30" /></label>
+		</fieldset>
+		<fieldset class="wide">
+			<legend>{s('abVariant')}</legend>
+			<label>{s('titleLabel')}<input bind:value={draft.ab.title} maxlength="60" /></label>
+			<label>{s('bodyLabel')}<input bind:value={draft.ab.body} maxlength="200" /></label>
+			<label>{s('buttonLabel')}<input bind:value={draft.ab.cta} maxlength="30" /></label>
 		</fieldset>
 		<fieldset class="wide">
 			<legend>{s('germanText')}</legend>

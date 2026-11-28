@@ -170,7 +170,12 @@ if ad and CAP.record(chat_id):
 
 		<aside class="hint-card">
 			<IconLightbulb />
-			<div><strong>{s('whatIsFeed')}</strong><p>{s('feedExplainer')}</p></div>
+			<div>
+				<strong>{s('whatIsFeed')}</strong><p>{s('feedExplainer')}</p>
+				<a class="support-text" href="https://t.me/litfass_advertisement_bot?start=onboarding" target="_blank" rel="noreferrer">
+					<IconTelegram /> {s('oneLink')} <IconArrowRight />
+				</a>
+			</div>
 		</aside>
 
 		<section class="faq">

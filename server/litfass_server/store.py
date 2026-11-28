@@ -18,6 +18,9 @@ CREATE TABLE IF NOT EXISTS ads (
     image_rev INTEGER NOT NULL DEFAULT 0,
     video TEXT,
     task_chat TEXT,
+    track_id TEXT NOT NULL,
+    boosted_until INTEGER NOT NULL DEFAULT 0,
+    ab TEXT NOT NULL DEFAULT '{}',
     weight INTEGER NOT NULL DEFAULT 1,
     start TEXT,
     "end" TEXT,
@@ -56,6 +59,9 @@ CREATE TABLE IF NOT EXISTS publishers (
     categories TEXT NOT NULL DEFAULT '[]',
     blocked INTEGER NOT NULL DEFAULT 0,
     allow_free INTEGER NOT NULL DEFAULT 1,
+    price_per_click INTEGER NOT NULL DEFAULT 1,
+    audience_size INTEGER NOT NULL DEFAULT 0,
+    boost_only INTEGER NOT NULL DEFAULT 0,
     created_at INTEGER NOT NULL
 );
 -- Stars paid by advertisers, tracked internally; payouts are handled by the operator
@@ -85,9 +91,9 @@ CREATE TABLE IF NOT EXISTS task_rewards (
 """
 
 EVENTS = ("view", "click", "reward")
-JSON_FIELDS = ("placements", "categories", "style")
-AD_FIELDS = ("url", "emoji", "image_file_id", "image_rev", "video", "task_chat", "weight", "start", "end", "paused", "paid", *JSON_FIELDS)
-PUBLISHER_FIELDS = ("name", "kind", "categories", "blocked", "allow_free")
+JSON_FIELDS = ("placements", "categories", "style", "ab")
+AD_FIELDS = ("url", "emoji", "image_file_id", "image_rev", "video", "task_chat", "ab", "boosted_until", "weight", "start", "end", "paused", "paid", *JSON_FIELDS)
+PUBLISHER_FIELDS = ("name", "kind", "categories", "blocked", "allow_free", "price_per_click", "audience_size", "boost_only")
 
 
 def new_key() -> str:
@@ -121,7 +127,13 @@ class Store:
             ("ads", "paid", "INTEGER NOT NULL DEFAULT 0"),
             ("ads", "video", "TEXT"),
             ("ads", "task_chat", "TEXT"),
+            ("ads", "track_id", "TEXT NOT NULL DEFAULT ''"),
+            ("ads", "boosted_until", "INTEGER NOT NULL DEFAULT 0"),
+            ("ads", "ab", "TEXT NOT NULL DEFAULT '{}'"),
             ("publishers", "allow_free", "INTEGER NOT NULL DEFAULT 1"),
+            ("publishers", "price_per_click", "INTEGER NOT NULL DEFAULT 1"),
+            ("publishers", "audience_size", "INTEGER NOT NULL DEFAULT 0"),
+            ("publishers", "boost_only", "INTEGER NOT NULL DEFAULT 0"),
         ):
             columns = {row["name"] for row in self.db.execute(f"PRAGMA table_info({table})")}
             if column not in columns:
@@ -137,8 +149,8 @@ class Store:
                 break
         with self.db:
             self.db.execute(
-                "INSERT INTO ads (id, url, created_by, created_at, updated_at) VALUES (?, ?, ?, ?, ?)",
-                (ad_id, url, created_by, now, now),
+                "INSERT INTO ads (id, url, track_id, created_by, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
+                (ad_id, url, secrets.token_urlsafe(6), created_by, now, now),
             )
         return ad_id
 

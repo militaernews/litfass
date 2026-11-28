@@ -1,3 +1,3 @@
-python-telegram-bot==22.7
+python-telegram-bot[job-queue]==22.7
 aiohttp==3.13.2
 ptbkit @ https://github.com/militaernews/ptb-kit/archive/refs/tags/v0.2.0.tar.gz

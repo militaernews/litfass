@@ -9,6 +9,7 @@ from __future__ import annotations
 import logging
 import random
 import re
+import datetime
 from datetime import date
 from html import escape
 
@@ -335,6 +336,35 @@ async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
             lines.append("\n\n".join(overview(c.store, p["name"], ad_names(c.store), by="ad_id", publisher_id=p["id"], lang=lg) for p in own))
     markup = Markup([[Button(t(lg, "b_main_menu"), callback_data="menu")]])
     await update.effective_message.reply_text("\n".join(lines), parse_mode=ParseMode.HTML, reply_markup=markup)
+
+
+async def send_digest(context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Daily summary for one chat, sent by the job queue."""
+    job = context.job
+    if job is None:
+        return
+    c = ctx(context)
+    user_id = job.chat_id
+    lg = "de" if job.data == "de" else "en"
+    campaigns = campaign_report(c.store, user_id)
+    stars = c.store.stars(user_id)
+    lines = [("📊 <b>litfass Daily</b>" if lg == "en" else "📊 <b>litfass Tagesüberblick</b>")]
+    if campaigns:
+        for campaign in campaigns[:5]:
+            lines.append(f"• {escape(campaign['title'])}: {campaign['views']} 👁 · {campaign['clicks']} 👆 · {campaign['ctr']}% CTR")
+    else:
+        lines.append("No campaigns yet." if lg == "en" else "Noch keine Kampagnen.")
+    lines.append(f"{'⭐' if lg == 'en' else '⭐'} {stars} Stars")
+    await context.bot.send_message(job.chat_id, "\n".join(lines), parse_mode=ParseMode.HTML)
+
+
+async def digest_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    user_id = update.effective_user.id
+    if context.job_queue:
+        context.job_queue.run_daily(send_digest, datetime.time(hour=9, minute=0), chat_id=user_id, data=lang(update), name=f"digest:{user_id}")
+    await update.effective_message.reply_text(
+        "Daily digest enabled — 09:00." if lang(update) == "en" else "Tagesüberblick aktiviert – 09:00."
+    )
 
 
 async def publishers_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -774,6 +804,7 @@ def register_handlers(app: Application) -> None:
     app.add_handler(CommandHandler("publishers", publishers_command))
     app.add_handler(CommandHandler("stats", stats_command))
     app.add_handler(CommandHandler("stars", stars_command))
+    app.add_handler(CommandHandler("digest", digest_command))
     app.add_handler(CommandHandler("terms", terms_command))
     app.add_handler(CommandHandler(["paysupport", "support"], paysupport_command))
     app.add_handler(PreCheckoutQueryHandler(on_pre_checkout))

@@ -31,6 +31,7 @@ COMMANDS = [
     BotCommand("campaigns", "Your adverts and CTR"),
     BotCommand("stats", "How your campaigns are doing"),
     BotCommand("stars", "Buy Stars for paid campaigns"),
+    BotCommand("digest", "Daily summary"),
     BotCommand("post", "Post a live advert in this chat"),
     BotCommand("support", "Contact support"),
     BotCommand("cancel", "Stop the current input"),
