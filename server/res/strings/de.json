@@ -143,5 +143,8 @@
   "command.menu": "Hauptmenü",
   "command.campaigns": "Deine Kampagnen",
   "command.stars": "Stars kaufen",
-  "command.support": "Support"
+  "command.support": "Support",
+  "post_empty": "Noch keine aktive Anzeige – ein Admin muss zuerst eine veröffentlichen.",
+  "post_fail": "Ich darf hier nicht schreiben. Füge mich als Admin mit „Nachrichten senden“ hinzu.",
+  "command.post": "Aktive Anzeige hier posten"
 }

@@ -36,6 +36,7 @@
 			"continue": true
 		},
 		{ "handle": "filesystem" },
+		{ "src": "/guide/?", "dest": "/guide.html" },
 		{ "src": "/manage/?", "dest": "/manage.html" },
 		{ "src": "/login/?", "dest": "/login.html" },
 		{ "src": "/litfass/(.*)", "dest": "/api/proxy?path=$1" }

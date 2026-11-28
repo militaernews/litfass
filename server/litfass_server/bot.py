@@ -7,6 +7,7 @@ a button sets what the next message means, the text handler fills it in.
 from __future__ import annotations
 
 import logging
+import random
 import re
 from datetime import date
 from html import escape
@@ -15,6 +16,7 @@ from telegram import InlineKeyboardButton as Button
 from telegram import InlineKeyboardMarkup as Markup
 from telegram import LabeledPrice, Update
 from telegram.constants import ParseMode
+from telegram.error import TelegramError
 from telegram.ext import (
     Application,
     CallbackQueryHandler,
@@ -270,6 +272,27 @@ async def campaigns_command(update: Update, context: ContextTypes.DEFAULT_TYPE) 
 async def newad_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     context.user_data["awaiting"] = ("new_url", None)
     await update.effective_message.reply_text(t(lang(update), "ask_new_url"))
+
+
+async def post_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Post one live advert into the chat the bot was added to."""
+    lg = lang(update)
+    ads = [ad for ad in ctx(context).store.list_ads() if not ad["paused"] and ad["text"].get("en")]
+    if not ads:
+        await update.effective_message.reply_text(t(lg, "post_empty"))
+        return
+    ad = random.choice(ads)
+    text = ad["text"]["en"]
+    message = (
+        f"<i>Anzeige</i>\n{escape(ad['emoji'] or '')} <b>{escape(text['title'])}</b>\n{escape(text['body'])}"
+    )
+    markup = Markup([[Button(text["cta"], url=ad["url"])]])
+    try:
+        await update.effective_message.reply_text(
+            message, parse_mode=ParseMode.HTML, reply_markup=markup, disable_web_page_preview=True
+        )
+    except TelegramError:
+        await update.effective_message.reply_text(t(lg, "post_fail"))
 
 
 async def register_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -744,6 +767,9 @@ def register_handlers(app: Application) -> None:
     app.add_handler(CommandHandler(["campaigns", "ads"], campaigns_command))
     app.add_handler(CommandHandler("newad", newad_command))
     app.add_handler(CommandHandler("register", register_command))
+    app.add_handler(
+        CommandHandler("post", post_command, filters=filters.ChatType.GROUPS | filters.ChatType.CHANNEL)
+    )
     app.add_handler(CommandHandler("mine", mine_command))
     app.add_handler(CommandHandler("publishers", publishers_command))
     app.add_handler(CommandHandler("stats", stats_command))

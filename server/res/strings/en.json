@@ -143,5 +143,8 @@
   "command.menu": "Main menu",
   "command.campaigns": "Your campaigns",
   "command.stars": "Buy Stars",
-  "command.support": "Support"
+  "command.support": "Support",
+  "post_empty": "No live advert to post yet — an admin has to publish one first.",
+  "post_fail": "I cannot post here. Add me as an admin with “send messages” permission.",
+  "command.post": "Post a live advert here"
 }

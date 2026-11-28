@@ -133,5 +133,22 @@
   "activationHint": "Aktivierung: 10 Stars",
   "clickHint": "1 Star pro Klick",
   "freeHint": "Kostenlos – nur für Werbeplätze, die das erlauben.",
-  "support": "Support: @militaernewskontakt"
+  "support": "Support: @militaernewskontakt",
+  "guideTitle": "Einrichtung",
+  "guideLead": "Wähle den Weg, der zu deinem Projekt passt. Anzeigen kommen ausschließlich von dir – kein Ad-Netzwerk.",
+  "guide1Title": "Bot in Gruppe oder Kanal",
+  "guide1Text": "Füge @litfass_advertisement_bot als Admin mit Nachrichtenrechten hinzu. Sende /post, um eine aktive Anzeige zu veröffentlichen.",
+  "guide1Step1": "Bot zur Gruppe oder zum Kanal hinzufügen",
+  "guide1Step2": "Dem Bot das Senden von Nachrichten erlauben",
+  "guide1Step3": "/post senden – eine aktive Anzeige erscheint",
+  "guide2Title": "Web oder Mini App",
+  "guide2Text": "Feed laden, Anzeige auswählen und rendern. Der Reporter meldet Views und Klicks zurück.",
+  "guide3Title": "Eigener Telegram-Bot",
+  "guide3Text": "Feed mit der Python-Bibliothek laden, Anzeige im Chat senden und Events zurückmelden.",
+  "addBot": "Bot hinzufügen",
+  "getFeed": "Feed-URL erhalten",
+  "feedHint": "Für eigene Integrationen: /register im Privatchat mit dem Bot – du bekommst eine Feed-URL.",
+  "copy": "Kopieren",
+  "copied": "Kopiert",
+  "needHelp": "Fragen? @militaernewskontakt"
 }

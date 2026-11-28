@@ -98,6 +98,7 @@ if ad and CAP.record(chat_id):
 				<a class="tg" href="https://t.me/litfass_advertisement_bot?startapp=manage" target="_blank" rel="noreferrer">
 					<IconSend /> <span>{s('signUp')}</span>
 				</a>
+				<a class="button" href="/guide"><IconBookOpen /> {s('guideTitle')}</a>
 				<a class="button" href="/manage"><IconArrowRight /> {s('manage')}</a>
 				<a class="button ghost" href="https://militaernews.vercel.app" target="_blank" rel="noreferrer">
 					{s('militaerNews')} <IconExternalLink />

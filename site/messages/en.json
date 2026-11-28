@@ -133,5 +133,22 @@
   "activationHint": "Activation: 10 Stars",
   "clickHint": "1 Star per click",
   "freeHint": "Free — only for placements that allow it.",
-  "support": "Support: @militaernewskontakt"
+  "support": "Support: @militaernewskontakt",
+  "guideTitle": "Setup guide",
+  "guideLead": "Pick the path that fits your project. Every advert comes from you – no ad network.",
+  "guide1Title": "Bot in a group or channel",
+  "guide1Text": "Add @litfass_advertisement_bot as an admin with permission to send messages. Send /post to publish a live advert.",
+  "guide1Step1": "Add the bot to your group or channel",
+  "guide1Step2": "Allow it to send messages",
+  "guide1Step3": "Send /post – a live advert appears",
+  "guide2Title": "Web or Mini App",
+  "guide2Text": "Fetch the feed, pick an advert and render it. The reporter sends views and clicks back.",
+  "guide3Title": "Your own Telegram bot",
+  "guide3Text": "Load the feed with the Python package, send the advert to a chat and report events.",
+  "addBot": "Add bot",
+  "getFeed": "Get a feed URL",
+  "feedHint": "For custom integrations: send /register in a private chat with the bot to get your feed URL.",
+  "copy": "Copy",
+  "copied": "Copied",
+  "needHelp": "Need help? @militaernewskontakt"
 }
