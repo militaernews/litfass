@@ -118,5 +118,19 @@
   "manageHint": "Verwalte deine Anzeigen, Werbeplätze und Statistiken.",
   "newAd": "Neue Anzeige",
   "sectionTools": "Werkzeuge",
-  "builtWith": "Gebaut mit"
+  "builtWith": "Gebaut mit",
+  "starsBalance": "Stars-Guthaben",
+  "earnings": "Verdiente Stars",
+  "buyStars": "Stars kaufen",
+  "paidCampaign": "Bezahlte Kampagne",
+  "paidHint": "Einmalige Aktivierung und 1 Star pro Klick. Der Werbeplatz erhält den Klick-Star.",
+  "allowFree": "Kostenlose Anzeigen erlauben",
+  "allow": "Erlauben",
+  "deny": "Nicht erlauben",
+  "campaigns": "Kampagnen",
+  "ctr": "CTR",
+  "noCampaigns": "Noch keine Kampagnen.",
+  "activationHint": "Aktivierung: 10 Stars",
+  "clickHint": "1 Star pro Klick",
+  "freeHint": "Kostenlos – nur für Werbeplätze, die das erlauben."
 }

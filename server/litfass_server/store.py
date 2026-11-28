@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS ads (
     start TEXT,
     "end" TEXT,
     paused INTEGER NOT NULL DEFAULT 1,
+    paid INTEGER NOT NULL DEFAULT 0,
     placements TEXT NOT NULL DEFAULT '[]',
     categories TEXT NOT NULL DEFAULT '[]',
     style TEXT NOT NULL DEFAULT '{}',
@@ -52,14 +53,32 @@ CREATE TABLE IF NOT EXISTS publishers (
     kind TEXT NOT NULL,
     categories TEXT NOT NULL DEFAULT '[]',
     blocked INTEGER NOT NULL DEFAULT 0,
+    allow_free INTEGER NOT NULL DEFAULT 1,
+    created_at INTEGER NOT NULL
+);
+-- Stars paid by advertisers, tracked internally; payouts are handled by the operator
+CREATE TABLE IF NOT EXISTS stars_balances (
+    user_id INTEGER PRIMARY KEY,
+    balance INTEGER NOT NULL DEFAULT 0,
+    updated_at INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS publisher_earnings (
+    publisher_id INTEGER PRIMARY KEY REFERENCES publishers(id) ON DELETE CASCADE,
+    stars INTEGER NOT NULL DEFAULT 0,
+    updated_at INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS payments (
+    charge_id TEXT PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    stars INTEGER NOT NULL,
     created_at INTEGER NOT NULL
 );
 """
 
 EVENTS = ("view", "click", "reward")
 JSON_FIELDS = ("placements", "categories", "style")
-AD_FIELDS = ("url", "emoji", "image_file_id", "image_rev", "weight", "start", "end", "paused", *JSON_FIELDS)
-PUBLISHER_FIELDS = ("name", "kind", "categories", "blocked")
+AD_FIELDS = ("url", "emoji", "image_file_id", "image_rev", "weight", "start", "end", "paused", "paid", *JSON_FIELDS)
+PUBLISHER_FIELDS = ("name", "kind", "categories", "blocked", "allow_free")
 
 
 def new_key() -> str:
@@ -88,6 +107,14 @@ class Store:
         self.db.row_factory = sqlite3.Row
         self.db.execute("PRAGMA foreign_keys = ON")
         self.db.executescript(SCHEMA)
+        # Older databases gain the paid / opt-in columns without losing data
+        for table, column, definition in (
+            ("ads", "paid", "INTEGER NOT NULL DEFAULT 0"),
+            ("publishers", "allow_free", "INTEGER NOT NULL DEFAULT 1"),
+        ):
+            columns = {row["name"] for row in self.db.execute(f"PRAGMA table_info({table})")}
+            if column not in columns:
+                self.db.execute(f"ALTER TABLE {table} ADD COLUMN {column} {definition}")
 
     # Adverts ------------------------------------------------------------------------------------
 
@@ -199,6 +226,57 @@ class Store:
                 "ON CONFLICT (day, ad_id, publisher_id, event) DO UPDATE SET count = count + excluded.count",
                 (day, ad_id, publisher_id, event, amount),
             )
+
+    # Stars ---------------------------------------------------------------------------------------
+
+    def stars(self, user_id: int) -> int:
+        row = self.db.execute("SELECT balance FROM stars_balances WHERE user_id = ?", (user_id,)).fetchone()
+        return int(row["balance"]) if row else 0
+
+    def credit_stars(self, user_id: int, stars: int, charge_id: str) -> bool:
+        """Records a paid invoice once and credits the advertiser's balance. False on a repeated charge."""
+        with self.db:
+            try:
+                self.db.execute(
+                    "INSERT INTO payments (charge_id, user_id, stars, created_at) VALUES (?, ?, ?, ?)",
+                    (charge_id, user_id, stars, int(time.time())),
+                )
+            except sqlite3.IntegrityError:
+                return False
+            self.db.execute(
+                "INSERT INTO stars_balances (user_id, balance, updated_at) VALUES (?, ?, ?) "
+                "ON CONFLICT (user_id) DO UPDATE SET balance = balance + excluded.balance, updated_at = excluded.updated_at",
+                (user_id, stars, int(time.time())),
+            )
+        return True
+
+    def spend_stars(self, user_id: int, stars: int) -> bool:
+        with self.db:
+            cursor = self.db.execute(
+                "UPDATE stars_balances SET balance = balance - ?, updated_at = ? WHERE user_id = ? AND balance >= ?",
+                (stars, int(time.time()), user_id, stars),
+            )
+            return cursor.rowcount == 1
+
+    def earnings(self, publisher_id: int) -> int:
+        row = self.db.execute("SELECT stars FROM publisher_earnings WHERE publisher_id = ?", (publisher_id,)).fetchone()
+        return int(row["stars"]) if row else 0
+
+    def charge_click(self, ad_id: str, publisher_id: int, stars: int) -> bool:
+        """Bill a click on a paid advert to its owner and credit the publisher; free ads cost nothing."""
+        ad = self.get_ad(ad_id)
+        if not ad or not ad["paid"]:
+            return True
+        owner = ad.get("created_by")
+        if owner is None or not self.spend_stars(owner, stars):
+            return False
+        with self.db:
+            self.db.execute(
+                "INSERT INTO publisher_earnings (publisher_id, stars, updated_at) VALUES (?, ?, ?) "
+                "ON CONFLICT (publisher_id) DO UPDATE SET stars = stars + excluded.stars, updated_at = excluded.updated_at",
+                (publisher_id, stars, int(time.time())),
+            )
+        return True
 
     def totals(self, since: str, *, ad_id: str | None = None, publisher_id: int | None = None, by: str | None = None) -> dict:
         """Event totals since a day (inclusive), optionally for one ad or publisher, optionally grouped

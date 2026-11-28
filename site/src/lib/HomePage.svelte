@@ -4,12 +4,10 @@
 	import IconExternalLink from '~icons/lucide/external-link';
 	import IconBookOpen from '~icons/lucide/book-open';
 	import IconLayoutGrid from '~icons/lucide/layout-grid';
-	import IconBot from '~icons/lucide/bot';
 	import IconGamepad2 from '~icons/lucide/gamepad-2';
 	import IconUsersRound from '~icons/lucide/users-round';
 	import IconChart from '~icons/lucide/chart-no-axes-column-increasing';
 	import IconGlobe from '~icons/lucide/globe';
-	import IconLanguages from '~icons/lucide/languages';
 	import IconScanEye from '~icons/lucide/scan-eye';
 	import IconRadio from '~icons/lucide/radio';
 	import IconMegaphone from '~icons/lucide/megaphone';
@@ -65,11 +63,6 @@ if ad and CAP.record(chat_id):
 		{ icon: IconSparkles, title: 'card3Title', text: 'card3Text' },
 		{ icon: IconChart, title: 'card4Title', text: 'card4Text' }
 	];
-	const steps = [
-		{ icon: IconBot, title: 'step1Title' },
-		{ icon: IconLanguages, title: 'step2Title' },
-		{ icon: IconCode, title: 'step3Title' }
-	];
 
 	let demo: HTMLDivElement | undefined = $state();
 
@@ -97,7 +90,6 @@ if ad and CAP.record(chat_id):
 	<main class="page">
 		<section class="hero">
 			<img class="hero-mark" src="/logo.png" alt="An advertising pillar on a radar screen" width="148" height="148" />
-			<p class="eyebrow"><IconSparkles /> {s('tags')}</p>
 			<h1>litfass<span>.</span></h1>
 			<p class="lead">{s('lead')}</p>
 			<div class="actions">
@@ -134,24 +126,6 @@ if ad and CAP.record(chat_id):
 		</section>
 
 		<section>
-			<h2>{s('steps')}</h2>
-			<ol class="steps">
-				{#each steps as step, index (step.title)}
-					<li>
-						<span class="step-num">{index + 1}</span>
-						<span class="step-icon"><step.icon /></span>
-						<strong>{s(step.title)}</strong>
-					</li>
-				{/each}
-			</ol>
-			<div class="howto">
-				<p>{s('step1')} <a href="https://t.me/litfass_advertisement_bot">@litfass_advertisement_bot</a> {@html s('step1b')}</p>
-				<p>{s('step2')}</p>
-				<p>{@html s('step3')}</p>
-			</div>
-		</section>
-
-		<section>
 			<h2>{s('showInProject')}</h2>
 			<div class="codes">
 				<div class="code">
@@ -172,7 +146,6 @@ if ad and CAP.record(chat_id):
 
 		<footer>
 			<span>{s('footer')} <a href="https://militaernews.vercel.app">{s('militaerNews')}</a></span>
-			<span>{s('builtWith')} <a href="https://svelte.dev" target="_blank" rel="noreferrer">SvelteKit</a></span>
 		</footer>
 	</main>
 {/key}

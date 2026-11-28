@@ -118,5 +118,19 @@
   "manageHint": "Manage your adverts, placements and statistics.",
   "newAd": "New advert",
   "sectionTools": "Tools",
-  "builtWith": "Built with"
+  "builtWith": "Built with",
+  "starsBalance": "Stars balance",
+  "earnings": "Stars earned",
+  "buyStars": "Buy Stars",
+  "paidCampaign": "Paid campaign",
+  "paidHint": "One-time activation and 1 Star per click. The placement receives the click Star.",
+  "allowFree": "Allow free adverts",
+  "allow": "Allow",
+  "deny": "Deny",
+  "campaigns": "Campaigns",
+  "ctr": "CTR",
+  "noCampaigns": "No campaigns yet.",
+  "activationHint": "Activation: 10 Stars",
+  "clickHint": "1 Star per click",
+  "freeHint": "Free — only for placements that allow it."
 }

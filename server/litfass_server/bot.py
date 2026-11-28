@@ -13,11 +13,20 @@ from html import escape
 
 from telegram import InlineKeyboardButton as Button
 from telegram import InlineKeyboardMarkup as Markup
-from telegram import Update
+from telegram import LabeledPrice, Update
 from telegram.constants import ParseMode
-from telegram.ext import Application, CallbackQueryHandler, CommandHandler, ContextTypes, MessageHandler, filters
+from telegram.ext import (
+    Application,
+    CallbackQueryHandler,
+    CommandHandler,
+    ContextTypes,
+    MessageHandler,
+    PreCheckoutQueryHandler,
+    filters,
+)
 
 from litfass_server.feed import CATEGORIES, KINDS, PLACEMENTS, STYLE_PRESETS, VARIANTS
+from litfass_server.pricing import STAR_PACKAGE
 from litfass_server.stats import overview
 from litfass_server.store import Store
 from litfass_server.texts import labels, lang_of, t
@@ -591,6 +600,48 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await show(text, markup)
 
 
+async def stars_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Sell a package of Stars that pays for paid advert campaigns."""
+    lg = lang_of(update)
+    await update.effective_message.reply_invoice(
+        title="litfass Stars" if lg == "en" else "litfass Stars",
+        description=("Stars to publish and click paid adverts." if lg == "en" else "Stars für bezahlte Anzeigen und Klicks."),
+        payload="stars:package",
+        provider_token="",
+        currency="XTR",
+        prices=[LabeledPrice("Stars", STAR_PACKAGE)],
+        start_parameter="stars",
+    )
+
+
+async def on_pre_checkout(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    query = update.pre_checkout_query
+    ok = query.invoice_payload == "stars:package"
+    await query.answer(ok=ok, error_message=None if ok else "Unknown product")
+
+
+async def on_successful_payment(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    payment = update.message.successful_payment
+    if payment.invoice_payload != "stars:package":
+        return
+    ctx(context).store.credit_stars(update.effective_user.id, payment.total_amount, payment.telegram_payment_charge_id)
+    await update.effective_message.reply_text(
+        f"+{payment.total_amount} Stars — " + ("ready for paid campaigns." if lang_of(update) == "en" else "bereit für bezahlte Anzeigen.")
+    )
+
+
+async def terms_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    await update.effective_message.reply_text(
+        "Paid campaigns: a one-time Stars activation fee and one Star per click, credited to the placement that showed the advert."
+        if lang_of(update) == "en"
+        else "Bezahlte Anzeigen: einmalige Stars-Aktivierung und ein Star pro Klick, gutgeschrieben an den Werbeplatz."
+    )
+
+
+async def paysupport_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    await update.effective_message.reply_text("Payment support: write to the bot owner." if lang_of(update) == "en" else "Zahlungssupport: Schreib dem Bot-Betreiber.")
+
+
 async def on_error(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
     logger.error("update failed", exc_info=context.error)
 
@@ -604,6 +655,11 @@ def register_handlers(app: Application) -> None:
     app.add_handler(CommandHandler("mine", mine_command))
     app.add_handler(CommandHandler("publishers", publishers_command))
     app.add_handler(CommandHandler("stats", stats_command))
+    app.add_handler(CommandHandler("stars", stars_command))
+    app.add_handler(CommandHandler("terms", terms_command))
+    app.add_handler(CommandHandler("paysupport", paysupport_command))
+    app.add_handler(PreCheckoutQueryHandler(on_pre_checkout))
+    app.add_handler(MessageHandler(filters.SUCCESSFUL_PAYMENT, on_successful_payment))
     app.add_handler(CallbackQueryHandler(on_button))
     app.add_handler(MessageHandler(filters.PHOTO & filters.ChatType.PRIVATE, on_photo))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND & filters.ChatType.PRIVATE, on_text))

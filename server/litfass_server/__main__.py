@@ -28,6 +28,7 @@ COMMANDS = [
     BotCommand("register", "Show adverts in your site, bot or channel"),
     BotCommand("mine", "Your placements and feed URLs"),
     BotCommand("stats", "How your adverts are doing"),
+    BotCommand("stars", "Buy Stars for paid campaigns"),
     BotCommand("cancel", "Stop the current input"),
 ]
 

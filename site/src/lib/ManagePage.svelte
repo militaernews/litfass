@@ -13,6 +13,7 @@
 	import IconMapPin from '~icons/lucide/map-pinned';
 	import IconSettings2 from '~icons/lucide/settings-2';
 	import IconX from '~icons/lucide/x';
+	import IconSparkles from '~icons/lucide/sparkles';
 	import { injectAdStyles, renderAd, type Ad, type AdStyle } from '@militaernews/litfass';
 	import { call, setDevInitData } from './api';
 	import { m } from './paraglide/messages.js';
@@ -26,18 +27,34 @@
 		click: number;
 		reward: number;
 	}
+	interface Campaign {
+		id: string;
+		title: string;
+		paid: boolean;
+		paused: boolean;
+		views: number;
+		clicks: number;
+		rewards: number;
+		views7: number;
+		clicks7: number;
+		ctr: number;
+	}
 	interface Stats {
 		totals: { 7: Events; 30: Events };
 		days: Array<{ day: string } & Events>;
 		ads: Array<{ id: string; title: string | null } & Events>;
+		campaigns?: Campaign[];
 	}
 	interface ManagedAd extends Ad {
 		paused?: boolean;
+		paid?: boolean;
 		created_by?: number;
 	}
 	interface Me {
 		user: TelegramUser;
 		admin: boolean;
+		stars?: number;
+		earnings?: number;
 	}
 	interface Draft {
 		url: string;
@@ -46,6 +63,7 @@
 		start: string;
 		end: string;
 		paused: boolean;
+		paid: boolean;
 		placements: string[];
 		categories: string[];
 		variant: 'card' | 'banner' | 'poster';
@@ -65,6 +83,7 @@
 		start: '',
 		end: '',
 		paused: true,
+		paid: false,
 		placements: [],
 		categories: [],
 		variant: 'card',
@@ -77,7 +96,7 @@
 
 	let me = $state<Me | null>(null);
 	let ads = $state<ManagedAd[]>([]);
-	let publishers = $state<Array<{ id: number; name: string; key: string; kind: string; blocked: boolean }>>([]);
+	let publishers = $state<Array<{ id: number; name: string; key: string; kind: string; blocked: boolean; allow_free: number | boolean }>>([]);
 	let stats = $state<Stats | null>(null);
 	let tab = $state<'ads' | 'placements' | 'stats'>('ads');
 	let draft = $state<Draft>(emptyDraft());
@@ -154,6 +173,7 @@
 			start: ad.start ?? '',
 			end: ad.end ?? '',
 			paused: Boolean(ad.paused),
+			paid: Boolean(ad.paid),
 			placements: [...(ad.placements ?? [])],
 			categories: [...(ad.categories ?? [])],
 			variant: ad.style?.variant ?? 'card',
@@ -179,6 +199,7 @@
 				start: draft.start || null,
 				end: draft.end || null,
 				paused: draft.paused,
+				paid: draft.paid,
 				placements: draft.placements,
 				categories: draft.categories,
 				style: { variant: draft.variant, background: draft.background, color: draft.color, accent: draft.accent },
@@ -206,6 +227,11 @@
 		} finally {
 			busy = false;
 		}
+	}
+
+	async function toggleFree(publisher: { id: number; allow_free: number | boolean }) {
+		await call('set_publisher', { id: publisher.id, allow_free: !publisher.allow_free });
+		await reload();
 	}
 
 	function useDevKey() {
@@ -307,13 +333,26 @@
 							</div>
 							<code class="key">{publisher.key}</code>
 						</div>
-						<button onclick={() => navigator.clipboard.writeText(publisher.key)}><IconCopy /> {s('copyKey')}</button>
+						<div class="row-actions">
+							<button onclick={() => navigator.clipboard.writeText(publisher.key)}><IconCopy /> {s('copyKey')}</button>
+							<button onclick={() => toggleFree(publisher)}>{publisher.allow_free ? s('deny') : s('allow')} · {s('allowFree')}</button>
+						</div>
 					</li>
 				{/each}
 			</ul>
 		{/if}
 	{:else}
 		{#if stats}
+			{#if stats.campaigns?.length}
+				<h2>{s('campaigns')}</h2>
+				<div class="stat-grid">
+					{#each stats.campaigns as campaign (campaign.id)}
+						<div class="stat"><span>{campaign.title}</span><strong>{campaign.ctr}%</strong><small>{campaign.views} {s('views')} · {campaign.clicks} {s('clicks')} · {s('ctr')}</small></div>
+					{/each}
+				</div>
+			{:else}
+				<p class="empty">{s('noCampaigns')}</p>
+			{/if}
 			<div class="stat-grid">
 				<div class="stat"><span><IconEye /> {s('views7')}</span><strong>{stats.totals['7'].view.toLocaleString()}</strong></div>
 				<div class="stat"><span><IconMousePointerClick /> {s('clicks7')}</span><strong>{stats.totals['7'].click.toLocaleString()}</strong></div>
@@ -357,6 +396,8 @@
 				<label>{s('start')}<input type="date" bind:value={draft.start} /></label>
 				<label>{s('end')}<input type="date" bind:value={draft.end} /></label>
 				<label class="check"><input type="checkbox" bind:checked={draft.paused} /> {s('startPaused')}</label>
+				<label class="check wide"><input type="checkbox" bind:checked={draft.paid} /> {s('paidCampaign')}</label>
+				<p class="hint wide">{draft.paid ? s('paidHint') : s('freeHint')}</p>
 				<fieldset>
 					<legend>{s('placements')}</legend>
 					{#each PLACEMENTS as item}<label class="check"><input type="checkbox" value={item} bind:group={draft.placements} /> {item}</label>{/each}

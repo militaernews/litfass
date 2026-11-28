@@ -75,5 +75,11 @@ def public_ad(ad: dict, public_url: str) -> dict:
 
 def build_feed(store: Store, publisher: dict, public_url: str, now: datetime | None = None) -> dict:
     today = (now or datetime.now(timezone.utc)).date()
-    ads = [public_ad(ad, public_url) for ad in store.list_ads() if is_live(ad, today) and fits(ad, publisher)]
+    ads = [
+        public_ad(ad, public_url)
+        for ad in store.list_ads()
+        if is_live(ad, today)
+        and fits(ad, publisher)
+        and (ad["paid"] or publisher["allow_free"])
+    ]
     return {"version": 1, "ads": ads}

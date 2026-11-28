@@ -13,6 +13,7 @@ from telegram import Bot
 
 from litfass_server.api import handle as handle_ui
 from litfass_server.feed import build_feed
+from litfass_server.pricing import CLICK_STARS
 import hmac
 
 from litfass_server.stats import network_report, publisher_report
@@ -69,9 +70,12 @@ def make_app(
         for ad_id, name in items:
             if ad_id not in known:
                 known[ad_id] = store.get_ad(ad_id) is not None
-            if known[ad_id]:
-                store.count(day, ad_id, publisher["id"], name)
-                counted += 1
+            if not known[ad_id]:
+                continue
+            if name == "click" and not store.charge_click(ad_id, publisher["id"], CLICK_STARS):
+                continue
+            store.count(day, ad_id, publisher["id"], name)
+            counted += 1
         return web.json_response({"counted": counted}, headers=CORS)
 
     async def feed(request: web.Request) -> web.Response:
