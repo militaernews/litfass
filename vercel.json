@@ -16,6 +16,7 @@
 		},
 		{ "handle": "filesystem" },
 		{ "src": "/manage/?", "dest": "/manage.html" },
+		{ "src": "/login/?", "dest": "/login.html" },
 		{ "src": "/litfass/(.*)", "dest": "/api/proxy?path=$1" }
 	]
 }
